@@ -33,7 +33,7 @@ One file. No modules, no installation, no internet access, no `jq` or Python. Co
 
 > **Status: `v0.1.0-slice` — a working proof of concept, not a finished MVP.**
 > The script runs end to end and produces complete reports against real machines,
-> but it has only been validated on Debian/Ubuntu. See [Compatibility](#compatibility).
+> but it has only been validated on Ubuntu and CentOS Stream 9. See [Compatibility](#compatibility).
 
 It is the Linux sibling of [Get-ServerFullReport](https://github.com/KikeMuller/Get-ServerFullReport) (Windows / PowerShell): the same report schema, the same visual language in the HTML, and the same discipline of never asserting anything about data that could not be read.
 
@@ -282,13 +282,27 @@ Strict POSIX `sh` compatibility is not a goal.
 |---|---|
 | Ubuntu 24.04 / 26.04 | **Tested**, including a run as root with `LANG=es_ES.UTF-8` |
 | Debian | Expected to be equivalent to Ubuntu; not tested directly |
-| RHEL / CentOS / Rocky / Alma / Fedora | **Written but not tested.** The `dnf`/`yum`, `firewalld` and `update-crypto-policies` branches are implemented against the documented format, without validation on a real machine |
+| CentOS Stream 9 | **Tested** on a real VM (KVM), including the `dnf`, `firewalld` and `update-crypto-policies` branches. See [Tested RHEL compatibility](#tested-rhel-compatibility). |
+| RHEL / Rocky / Alma / Fedora | Not tested directly, but they share a base with CentOS Stream 9 (same `dnf`, `systemd`, `firewalld`, SELinux) |
 | SUSE / openSUSE | **Not tested.** `zypper` branch implemented |
 | Alpine / Arch | **Partial.** Installed packages are listed (`apk`, `pacman`), but pending updates are not: that section reports that the manager has no query implemented |
 
 If you try it on one of the unvalidated ones, a report on the result is very welcome.
 
 The script forces `LC_ALL=C` on every external command, so it behaves the same on servers configured in any language. This came out of a real problem: on a machine with `LANG=es_ES.UTF-8`, `lsblk` returned sizes like `221,1M` instead of `221.1M`, and the parsers failed silently.
+
+### Tested RHEL compatibility
+
+The RHEL family was tested on a real VM (CentOS Stream 9, official cloud image on KVM/libvirt), not just against documentation. The test found and fixed a real bug: the firewall section never tried to read `firewalld` rules — it only tried `ufw`, `nft` and `iptables` — so on a typical RHEL server, running as root with firewalld active, it said "could not be read without root privileges", which was false: privileges were there, the code branch was missing. Fixed by adding `firewall-cmd --list-all-zones` and distinguishing the real reason (no privileges / no tool installed / tool detected but no data) instead of a fixed message.
+
+Confirmed on that same VM:
+
+- `dnf check-update` interpreted correctly (exit code 0 with no output = no pending updates; code 100 = updates available, per dnf's own documented behavior).
+- `update-crypto-policies --show` correctly returning `DEFAULT`.
+- SELinux via `getenforce` (`Enforcing`), this family's counterpart to AppArmor.
+- Degradation without privileges: same behavior as on Ubuntu, no bash errors.
+
+Rocky Linux, AlmaLinux and RHEL itself were not tested directly, but they share a binary base with CentOS Stream 9 (same `dnf`, `systemd`, `firewalld`, SELinux), so the residual risk is low.
 
 ## Security
 
@@ -302,7 +316,7 @@ The script forces `LC_ALL=C` on every external command, so it behaves the same o
 
 - **It does not determine which TLS protocols the system actually accepts.** Section 1.11.2 reports the OpenSSL version and explicit configuration, but it does not issue a compliance verdict. The only reliable way to know is to open a real TLS connection, and the script is read-only. Documented in detail in the code itself.
 - **Pending updates with `apk` and `pacman`** is not implemented.
-- **No RHEL coverage validated on a real machine** (see above).
+- **Rocky Linux, AlmaLinux and RHEL itself were not tested directly** (only CentOS Stream 9; see [Tested RHEL compatibility](#tested-rhel-compatibility)).
 
 Compared to the Windows version, these capabilities are still missing:
 

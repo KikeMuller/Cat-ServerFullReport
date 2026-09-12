@@ -9,7 +9,25 @@ versionado es [semántico](https://semver.org/lang/es/).
 
 ## [No publicado]
 
-Nada por ahora.
+### Corregido
+
+- **1.14 Firewall nunca leía reglas de `firewalld`.** La función solo probaba
+  `ufw`, `nft` e `iptables`; en un servidor RHEL/CentOS/Fedora real, con
+  firewalld activo y corriendo como root, el reporte decía "no se pudieron
+  leer sin privilegios de root" — una afirmación falsa sobre la causa,
+  detectada al probar por primera vez contra una VM real de CentOS Stream 9.
+  Se agregó la rama `firewall-cmd --list-all-zones` y se distingue
+  explícitamente el motivo real por el que faltan reglas (sin privilegios /
+  sin herramienta instalada / herramienta detectada pero sin salida) en vez
+  de un mensaje fijo que no correspondía a los tres casos.
+
+### Validado
+
+- **Familia RHEL probada en una VM real** (CentOS Stream 9, imagen cloud
+  oficial sobre KVM/libvirt), no solo contra documentación: las ramas de
+  `dnf`, `update-crypto-policies` y SELinux (vía `getenforce`) funcionan
+  como estaba escrito. Detalle en el README, sección "Compatibilidad
+  probada en RHEL".
 
 ---
 

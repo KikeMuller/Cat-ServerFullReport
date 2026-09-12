@@ -3531,11 +3531,10 @@ recolectar_paquetes() {
 recolectar_firewall() {
   local id="1.14" archivo="$TMPDIR_TRABAJO/sec_1_14.tsv"
 
-  # Leer las REGLAS de ufw/nft/iptables requiere privilegios de root en la
-  # gran mayoria de distros (se confirmo asi en los dos equipos de prueba
-  # de esta sesion, ninguno de los dos root). Sin root, lo unico que se
-  # puede determinar con certeza es si el SERVICIO systemd correspondiente
-  # esta activo, que es una simple consulta a systemd sin privilegios.
+  # Leer las REGLAS de ufw/firewalld/nft/iptables requiere privilegios de
+  # root en la gran mayoria de distros. Sin root, lo unico que se puede
+  # determinar con certeza es si el SERVICIO systemd correspondiente esta
+  # activo, que es una simple consulta a systemd sin privilegios.
   local implementacion="${CAPS[firewall]:-}"
   local estado_servicio="N/D"
 
@@ -3544,14 +3543,45 @@ recolectar_firewall() {
     [ -n "$estado_servicio" ] || estado_servicio="N/D"
   fi
 
-  local reglas=""
-  if [ "${CAPS[es_root]:-0}" = "1" ]; then
-    if command -v ufw >/dev/null 2>&1; then
-      reglas="$(ejecutar_comando 10 ufw status verbose 2>/dev/null)"
-    elif command -v nft >/dev/null 2>&1; then
-      reglas="$(ejecutar_comando 10 nft list ruleset 2>/dev/null | head -50)"
-    elif command -v iptables >/dev/null 2>&1; then
-      reglas="$(ejecutar_comando 10 iptables -L -n 2>/dev/null | head -50)"
+  # El motivo por el que faltan reglas se distingue explicitamente en vez de
+  # usar un mensaje fijo. Se encontro probando en un CentOS Stream 9 real:
+  # con root pero sin ninguna herramienta de firewall instalada, la version
+  # anterior de esta seccion igual decia "no se pudieron leer sin privilegios
+  # de root" -- una afirmacion falsa sobre la causa (SI habia privilegios; lo
+  # que faltaba era la herramienta). Contradice el principio central del
+  # proyecto: no afirmar algo que no se puede sustentar con el dato real.
+  local reglas="" motivo_sin_reglas=""
+  if [ "${CAPS[es_root]:-0}" != "1" ]; then
+    motivo_sin_reglas="No se pudieron leer sin privilegios de root."
+  elif [ -z "$implementacion" ]; then
+    motivo_sin_reglas="No se detecto ninguna herramienta de firewall instalada (firewalld, ufw, nftables ni iptables)."
+  else
+    case "$implementacion" in
+      ufw)
+        reglas="$(ejecutar_comando 10 ufw status verbose 2>/dev/null)"
+        ;;
+      firewalld)
+        # Rama agregada tras probar en CentOS Stream 9: firewalld es el
+        # firewall por defecto de toda la familia RHEL/Fedora, y la version
+        # anterior de esta funcion nunca lo consultaba -- solo probaba
+        # ufw/nft/iptables. En un servidor RHEL real con firewalld activo,
+        # el script jamas leia una regla aunque corriera como root.
+        # "--list-all-zones" en vez de "--list-all" para no limitarse a la
+        # zona por defecto: un servidor puede tener interfaces en zonas
+        # distintas con reglas distintas.
+        if command -v firewall-cmd >/dev/null 2>&1; then
+          reglas="$(ejecutar_comando 10 firewall-cmd --list-all-zones 2>/dev/null | head -50)"
+        fi
+        ;;
+      nftables)
+        reglas="$(ejecutar_comando 10 nft list ruleset 2>/dev/null | head -50)"
+        ;;
+      iptables)
+        reglas="$(ejecutar_comando 10 iptables -L -n 2>/dev/null | head -50)"
+        ;;
+    esac
+    if [ -z "$reglas" ]; then
+      motivo_sin_reglas="Se detecto '$implementacion' pero no se pudieron leer sus reglas (el servicio puede estar inactivo o el comando no devolvio salida)."
     fi
   fi
 
@@ -3565,12 +3595,12 @@ recolectar_firewall() {
         printf 'Regla\t%s\n' "$(tsv_escape "$linea")"
       done
     else
-      printf 'Reglas\t%s\n' "(no se pudieron leer sin privilegios de root)"
+      printf 'Reglas\t%s\n' "$(tsv_escape "$motivo_sin_reglas")"
     fi
   } > "$archivo"
 
   agregar_seccion_tabla "$id" "Firewall" \
-    "Implementacion de firewall detectada (firewalld/ufw/nftables/iptables) y sus reglas si el equipo corrio como root. Sin privilegios de root, solo se puede determinar si el servicio esta activo, no el contenido de las reglas." \
+    "Implementacion de firewall detectada (firewalld/ufw/nftables/iptables) y sus reglas si el equipo corrio como root y la herramienta estaba disponible. Sin privilegios de root, solo se puede determinar si el servicio esta activo, no el contenido de las reglas." \
     "$archivo"
 }
 

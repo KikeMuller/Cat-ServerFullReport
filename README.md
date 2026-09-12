@@ -29,7 +29,7 @@ Un solo archivo. Sin módulos, sin instalación, sin conexión a internet, sin `
 
 > **Estado: `v0.1.0-slice` — prueba de concepto funcional, no un MVP terminado.**
 > El script corre de punta a punta y genera reportes completos contra equipos reales,
-> pero está validado solo en Debian/Ubuntu. Ver [Compatibilidad](#compatibilidad).
+> pero está validado solo en Ubuntu y CentOS Stream 9. Ver [Compatibilidad](#compatibilidad).
 
 Es el hermano Linux de [Get-ServerFullReport](https://github.com/KikeMuller/Get-ServerFullReport) (Windows / PowerShell): mismo esquema de reporte, mismo lenguaje visual del HTML y la misma disciplina de no afirmar nada sobre un dato que no se pudo leer.
 
@@ -278,13 +278,27 @@ No se persigue compatibilidad con `sh` POSIX estricto.
 |---|---|
 | Ubuntu 24.04 / 26.04 | **Probado**, incluyendo una ejecución como root con `LANG=es_ES.UTF-8` |
 | Debian | Esperado equivalente a Ubuntu; no probado directamente |
-| RHEL / CentOS / Rocky / Alma / Fedora | **Escrito pero no probado.** Las ramas de `dnf`/`yum`, `firewalld` y `update-crypto-policies` están implementadas contra el formato documentado, sin validación en un equipo real |
+| CentOS Stream 9 | **Probado** en una VM real (KVM), incluidas las ramas de `dnf`, `firewalld` y `update-crypto-policies`. Ver [Compatibilidad probada en RHEL](#compatibilidad-probada-en-rhel). |
+| RHEL / Rocky / Alma / Fedora | No probados directamente, pero comparten base con CentOS Stream 9 (mismo `dnf`, `systemd`, `firewalld`, SELinux) |
 | SUSE / openSUSE | **No probado.** Rama de `zypper` implementada |
 | Alpine / Arch | **Parcial.** Los paquetes instalados se listan (`apk`, `pacman`), pero las actualizaciones pendientes no: esa sección informa que el gestor no tiene consulta implementada |
 
 Si lo pruebas en alguna de las no validadas, un reporte de resultado es muy bienvenido.
 
 El script fuerza `LC_ALL=C` en todos los comandos externos, así que funciona igual en servidores configurados en cualquier idioma. Esto salió de un problema real: en un equipo con `LANG=es_ES.UTF-8`, `lsblk` devolvía tamaños como `221,1M` en vez de `221.1M`, y los parsers fallaban en silencio.
+
+### Compatibilidad probada en RHEL
+
+La familia RHEL se probó en una VM real (CentOS Stream 9, imagen cloud oficial sobre KVM/libvirt), no solo contra la documentación. La prueba encontró y corrigió un bug real: la sección de firewall nunca intentaba leer reglas de `firewalld` —solo probaba `ufw`, `nft` e `iptables`— así que en un servidor RHEL típico, con root y firewalld activo, decía "no se pudieron leer sin privilegios de root" siendo falso: sí había privilegios, faltaba la rama de código. Corregido agregando `firewall-cmd --list-all-zones` y distinguiendo el motivo real (sin privilegios / sin herramienta instalada / herramienta detectada pero sin datos) en vez de un mensaje fijo.
+
+Confirmado en esa misma VM:
+
+- `dnf check-update` interpretado correctamente (código 0 sin salida = sin actualizaciones pendientes; código 100 = sí hay, según la documentación de dnf).
+- `update-crypto-policies --show` devolviendo `DEFAULT` correctamente.
+- SELinux vía `getenforce` (`Enforcing`), la contraparte de AppArmor en esta familia.
+- Degradación sin privilegios: mismo comportamiento que en Ubuntu, sin errores de bash.
+
+Rocky Linux, AlmaLinux y RHEL propiamente dicho no se probaron directamente, pero comparten base binaria con CentOS Stream 9 (mismo `dnf`, `systemd`, `firewalld`, SELinux), así que el riesgo residual es bajo.
 
 ## Seguridad
 
@@ -298,7 +312,7 @@ El script fuerza `LC_ALL=C` en todos los comandos externos, así que funciona ig
 
 - **No determina qué protocolos TLS acepta realmente el sistema.** La sección 1.11.2 reporta versión de OpenSSL y configuración explícita, pero no emite veredicto de cumplimiento. La única forma confiable de saberlo es abrir una conexión TLS real, y el script es de solo lectura. Documentado en detalle en el propio código.
 - **Actualizaciones pendientes con `apk` y `pacman`** no está implementado.
-- **Sin cobertura de RHEL validada en un equipo real** (ver arriba).
+- **Rocky Linux, AlmaLinux y RHEL propiamente dicho no se probaron directamente** (solo CentOS Stream 9; ver [Compatibilidad probada en RHEL](#compatibilidad-probada-en-rhel)).
 
 Respecto de la versión Windows, todavía faltan estas capacidades:
 
