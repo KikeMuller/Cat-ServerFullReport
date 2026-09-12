@@ -11,6 +11,19 @@ versionado es [semántico](https://semver.org/lang/es/).
 
 ### Corregido
 
+- **Deteccion de capacidades subestimaba lo instalado en usuarios sin
+  privilegios.** `aa-status`, `dmidecode`, `ufw`, `nft`, `iptables` y
+  `getenforce` viven por convención en `/usr/sbin`, directorio ausente del
+  `PATH` de un usuario sin privilegios en Debian/Ubuntu (confirmado en vivo:
+  `/usr/local/bin:/usr/bin:/bin:/usr/games`). La detección usaba `command -v`
+  a secas, así que sin root el script reportaba "No se detectó SELinux ni
+  AppArmor instalado" cuando AppArmor sí estaba instalado — una afirmación
+  falsa sobre datos nunca buscados donde correspondía. Ya existía este mismo
+  parche, pero solo para `sshd`; se generalizó a una función
+  (`herramienta_disponible`) que también revisa `/usr/sbin`, `/sbin` y
+  `/usr/local/sbin`, aplicada a los siete binarios administrativos que el
+  script detecta. Encontrado probando por primera vez contra una VM real de
+  Debian 12.
 - **1.14 Firewall nunca leía reglas de `firewalld`.** La función solo probaba
   `ufw`, `nft` e `iptables`; en un servidor RHEL/CentOS/Fedora real, con
   firewalld activo y corriendo como root, el reporte decía "no se pudieron
@@ -45,6 +58,11 @@ versionado es [semántico](https://semver.org/lang/es/).
   probadas): `rpm -qa`, `iptables -L -n` y AppArmor vía `aa-status`
   funcionan como estaba escrito. Detalle en el README, sección
   "Compatibilidad probada en SUSE".
+- **Debian probado en una VM real** (Debian 12 bookworm, imagen cloud
+  oficial sobre KVM/libvirt): `apt`/`dpkg-query`, actualizaciones pendientes
+  sin falsos negativos y AppArmor vía `aa-status` funcionan como estaba
+  escrito. Detalle en el README, sección "Compatibilidad probada en
+  Debian".
 
 ---
 

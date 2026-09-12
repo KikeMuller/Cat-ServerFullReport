@@ -524,6 +524,37 @@ ejecutar_comando() {
 # REGION: CORE - Deteccion de capacidades
 # =============================================================================
 
+herramienta_disponible() {
+  # herramienta_disponible <binario>
+  #
+  # "command -v" por si solo NO alcanza para herramientas administrativas
+  # (aa-status, dmidecode, ufw, nft, iptables, getenforce...): todas viven
+  # en /usr/sbin o /sbin por convencion, y esos directorios estan AUSENTES
+  # del PATH de un usuario sin privilegios en Debian/Ubuntu por diseno del
+  # sistema (confirmado en vivo: PATH de un usuario normal en una VM Debian
+  # real era "/usr/local/bin:/usr/bin:/bin:/usr/games", sin rastro de sbin).
+  #
+  # El efecto sin este chequeo: detectar_capacidades() reportaba
+  # CAPS[apparmor]=0 pese a que aa-status SI estaba instalado, y la seccion
+  # 1.9 terminaba diciendo "No se detecto SELinux ni AppArmor instalado en
+  # este equipo" -- una afirmacion FALSA sobre datos que en realidad nunca
+  # se buscaron donde correspondia. Viola el principio central del proyecto
+  # (no afirmar sobre un dato que no se pudo leer) tanto como el bug de
+  # firewalld/firewall-cmd corregido antes, solo que a nivel de deteccion
+  # en vez de a nivel de mensaje.
+  #
+  # Ya existia este mismo parche, pero solo para sshd (una linea mas abajo
+  # en detectar_capacidades, con un comentario casi identico a este). Esta
+  # funcion generaliza ese fix para que no haya que repetirlo binario por
+  # binario cada vez que se agregue una herramienta administrativa nueva.
+  local binario="$1"
+  command -v "$binario" >/dev/null 2>&1 && return 0
+  [ -x "/usr/sbin/$binario" ] && return 0
+  [ -x "/sbin/$binario" ] && return 0
+  [ -x "/usr/local/sbin/$binario" ] && return 0
+  return 1
+}
+
 detectar_capacidades() {
   CAPS[es_root]=0
   [ "$(id -u 2>/dev/null)" = "0" ] && CAPS[es_root]=1
@@ -556,16 +587,12 @@ detectar_capacidades() {
   done
 
   CAPS[selinux]=0
-  command -v getenforce >/dev/null 2>&1 && CAPS[selinux]=1
+  herramienta_disponible getenforce && CAPS[selinux]=1
   CAPS[apparmor]=0
-  command -v aa-status >/dev/null 2>&1 && CAPS[apparmor]=1
+  herramienta_disponible aa-status && CAPS[apparmor]=1
 
-  # sshd normalmente vive en /usr/sbin o /sbin, que no siempre estan en el
-  # PATH de un usuario sin privilegios: no alcanza con "command -v sshd".
   CAPS[sshd]=0
-  if command -v sshd >/dev/null 2>&1 || [ -x /usr/sbin/sshd ] || [ -x /sbin/sshd ]; then
-    CAPS[sshd]=1
-  fi
+  herramienta_disponible sshd && CAPS[sshd]=1
 
   # Roles de servidor, disponibilidad de journalctl y de dmidecode. Estas
   # claves las consume el bloque final de colectores (paquetes, firewall,
@@ -573,17 +600,17 @@ detectar_capacidades() {
   # se agregan aca antes de escribir esos colectores, no despues (revisado
   # leyendo el codigo antes de correrlo, no corriendolo).
   CAPS[nginx]=0
-  command -v nginx >/dev/null 2>&1 && CAPS[nginx]=1
+  herramienta_disponible nginx && CAPS[nginx]=1
   CAPS[apache]=0
-  { command -v apache2ctl >/dev/null 2>&1 || command -v httpd >/dev/null 2>&1; } && CAPS[apache]=1
+  { herramienta_disponible apache2ctl || herramienta_disponible httpd; } && CAPS[apache]=1
   CAPS[samba]=0
-  command -v testparm >/dev/null 2>&1 && CAPS[samba]=1
+  herramienta_disponible testparm && CAPS[samba]=1
   CAPS[nfs]=0
   { [ -r /etc/exports ] && [ -s /etc/exports ]; } && CAPS[nfs]=1
   CAPS[journalctl]=0
   command -v journalctl >/dev/null 2>&1 && CAPS[journalctl]=1
   CAPS[dmidecode]=0
-  command -v dmidecode >/dev/null 2>&1 && CAPS[dmidecode]=1
+  herramienta_disponible dmidecode && CAPS[dmidecode]=1
   CAPS[findmnt]=0
   command -v findmnt >/dev/null 2>&1 && CAPS[findmnt]=1
 
@@ -605,13 +632,13 @@ detectar_capacidades() {
   CAPS[firewall]=""
   if [ "${CAPS[init]:-otro}" = "systemd" ] && [ "$(ejecutar_comando 5 systemctl is-active firewalld 2>/dev/null)" = "active" ]; then
     CAPS[firewall]="firewalld"
-  elif command -v ufw >/dev/null 2>&1; then
+  elif herramienta_disponible ufw; then
     CAPS[firewall]="ufw"
-  elif command -v firewall-cmd >/dev/null 2>&1; then
+  elif herramienta_disponible firewall-cmd; then
     CAPS[firewall]="firewalld"
-  elif command -v nft >/dev/null 2>&1; then
+  elif herramienta_disponible nft; then
     CAPS[firewall]="nftables"
-  elif command -v iptables >/dev/null 2>&1; then
+  elif herramienta_disponible iptables; then
     CAPS[firewall]="iptables"
   fi
 
@@ -3569,7 +3596,7 @@ recolectar_firewall() {
         # "--list-all-zones" en vez de "--list-all" para no limitarse a la
         # zona por defecto: un servidor puede tener interfaces en zonas
         # distintas con reglas distintas.
-        if command -v firewall-cmd >/dev/null 2>&1; then
+        if herramienta_disponible firewall-cmd; then
           reglas="$(ejecutar_comando 10 firewall-cmd --list-all-zones 2>/dev/null | head -50)"
         fi
         ;;

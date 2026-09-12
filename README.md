@@ -29,7 +29,7 @@ Un solo archivo. Sin módulos, sin instalación, sin conexión a internet, sin `
 
 > **Estado: `v0.1.0-slice` — prueba de concepto funcional, no un MVP terminado.**
 > El script corre de punta a punta y genera reportes completos contra equipos reales,
-> pero está validado solo en Ubuntu, CentOS Stream 9 y openSUSE Leap. Ver [Compatibilidad](#compatibilidad).
+> pero está validado solo en Ubuntu, CentOS Stream 9, openSUSE Leap y Debian 12. Ver [Compatibilidad](#compatibilidad).
 
 Es el hermano Linux de [Get-ServerFullReport](https://github.com/KikeMuller/Get-ServerFullReport) (Windows / PowerShell): mismo esquema de reporte, mismo lenguaje visual del HTML y la misma disciplina de no afirmar nada sobre un dato que no se pudo leer.
 
@@ -277,7 +277,7 @@ No se persigue compatibilidad con `sh` POSIX estricto.
 | Distribución | Estado |
 |---|---|
 | Ubuntu 24.04 / 26.04 | **Probado**, incluyendo una ejecución como root con `LANG=es_ES.UTF-8` |
-| Debian | Esperado equivalente a Ubuntu; no probado directamente |
+| Debian 12 (bookworm) | **Probado** en una VM real (KVM). Ver [Compatibilidad probada en Debian](#compatibilidad-probada-en-debian). |
 | CentOS Stream 9 | **Probado** en una VM real (KVM), incluidas las ramas de `dnf`, `firewalld` y `update-crypto-policies`. Ver [Compatibilidad probada en RHEL](#compatibilidad-probada-en-rhel). |
 | RHEL / Rocky / Alma / Fedora | No probados directamente, pero comparten base con CentOS Stream 9 (mismo `dnf`, `systemd`, `firewalld`, SELinux) |
 | openSUSE Leap 15.6 | **Probado** en una VM real (KVM), incluida la rama de `zypper` con bash 4.4 (el piso mínimo del proyecto). Ver [Compatibilidad probada en SUSE](#compatibilidad-probada-en-suse). |
@@ -318,6 +318,19 @@ Confirmado en esa misma VM:
 - AppArmor vía `aa-status`, tercera confirmación en vivo del mismo mecanismo que Ubuntu, distinto de SELinux en RHEL.
 
 SUSE Linux Enterprise Server (SLES) y openSUSE Tumbleweed no se probaron directamente, pero comparten `zypper` y el formato `rpm` con openSUSE Leap.
+
+### Compatibilidad probada en Debian
+
+Debian 12 (bookworm) se probó en una VM real (KVM/libvirt). La prueba encontró y corrigió un bug real que afecta a **todas** las distribuciones probadas, no solo a Debian: varias herramientas administrativas (`aa-status`, `dmidecode`, `ufw`, `nft`, `iptables`, `getenforce`) viven por convención en `/usr/sbin`, y ese directorio **no está en el `PATH`** de un usuario sin privilegios en Debian/Ubuntu (confirmado en vivo: `/usr/local/bin:/usr/bin:/bin:/usr/games`, sin rastro de `sbin`). La detección de capacidades usaba `command -v` a secas, así que sin root el script reportaba "No se detectó SELinux ni AppArmor instalado en este equipo" cuando AppArmor sí estaba instalado — una afirmación falsa sobre datos que nunca se buscaron donde correspondía, la misma familia de problema que el bug de `firewalld` corregido antes, pero a nivel de detección en vez de a nivel de mensaje.
+
+Ya existía este mismo parche, pero aplicado solo a `sshd`. Se generalizó a una función (`herramienta_disponible`) que revisa también `/usr/sbin`, `/sbin` y `/usr/local/sbin`, y se aplicó a los siete binarios administrativos que el script detecta.
+
+Confirmado en esa misma VM:
+
+- **Instalación real problemática**: la imagen cloud oficial de Debian resultó tener varios obstáculos para un arranque automatizado por `cloud-init` (el `GRUB` se colgaba sin un dispositivo de video, `cloud-init.target` no estaba enlazado al arranque por defecto, y el datasource `NoCloud` no llegaba a detectar el CD-ROM de configuración). Nada de esto es un problema del script — es infraestructura de pruebas, documentado aquí porque explica por qué Debian se probó después que CentOS y openSUSE.
+- `apt`/`dpkg-query` listando 324 paquetes correctamente, y sin falsos negativos de actualizaciones pendientes (verificado a mano contra `apt list --upgradable`).
+- AppArmor vía `aa-status` (11 perfiles, todos en modo enforce) — cuarta confirmación en vivo del mismo mecanismo.
+- `bash 5.2.15`, sin problemas.
 
 ## Seguridad
 
