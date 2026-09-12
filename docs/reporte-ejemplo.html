@@ -1,0 +1,767 @@
+<!doctype html><html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Reporte de Configuracion - SRV-DEMO-01</title><style>:root{
+  --bg:#f4f6f9; --surface:#ffffff; --surface-2:#eef2f7; --surface-3:#e4eaf2;
+  --border:#d8e0ea; --border-strong:#b9c6d6; --text:#131b26; --text-dim:#5a6a7d;
+  --accent:#0f4c81; --accent-hover:#0c3d68; --accent-soft:#e7eff8;
+  --shadow:0 1px 2px rgba(16,32,52,.06),0 4px 12px rgba(16,32,52,.05);
+
+  --sev-crit:#a4231b; --sev-crit-bg:#fbe4e2;
+  --sev-warn:#7a4c00; --sev-warn-bg:#fbead0;
+  --sev-info:#0d3f68; --sev-info-bg:#e3edf9;
+  --sev-ok:#146c2c;   --sev-ok-bg:#e2f3e6;
+  --sev-neutral:#4c5a6b; --sev-neutral-bg:#e9edf3;
+
+  --meter-track:#e4eaf2; --meter-ok:#1e9e4a; --meter-warn:#c98a00; --meter-crit:#cf3428;
+
+  --font-sans:-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+  --font-mono:"Cascadia Mono","SF Mono",Consolas,"Liberation Mono",monospace;
+
+  --radius-card:8px; --radius-control:5px; --radius-badge:999px;
+  color-scheme: light;
+}
+
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#0d1117; --surface:#151b23; --surface-2:#1b222c; --surface-3:#222b36;
+    --border:#2a333f; --border-strong:#3a4553; --text:#e6edf3; --text-dim:#93a1b1;
+    --accent:#4d9fe8; --accent-hover:#6fb3ee; --accent-soft:#12283d;
+    --shadow:0 1px 2px rgba(0,0,0,.4),0 4px 14px rgba(0,0,0,.3);
+
+    --sev-crit:#ff9d93; --sev-crit-bg:#3a1613;
+    --sev-warn:#ffcf87; --sev-warn-bg:#3a2a10;
+    --sev-info:#8dcbf7; --sev-info-bg:#112a40;
+    --sev-ok:#8fe6ab;   --sev-ok-bg:#0f3320;
+    --sev-neutral:#b7c2d0; --sev-neutral-bg:#232c38;
+
+    --meter-track:#2a333f; --meter-ok:#3ecb6c; --meter-warn:#e0aa3e; --meter-crit:#ec5a4d;
+    color-scheme: dark;
+  }
+}
+
+:root[data-theme="dark"]{
+  --bg:#0d1117; --surface:#151b23; --surface-2:#1b222c; --surface-3:#222b36;
+  --border:#2a333f; --border-strong:#3a4553; --text:#e6edf3; --text-dim:#93a1b1;
+  --accent:#4d9fe8; --accent-hover:#6fb3ee; --accent-soft:#12283d;
+  --shadow:0 1px 2px rgba(0,0,0,.4),0 4px 14px rgba(0,0,0,.3);
+
+  --sev-crit:#ff9d93; --sev-crit-bg:#3a1613;
+  --sev-warn:#ffcf87; --sev-warn-bg:#3a2a10;
+  --sev-info:#8dcbf7; --sev-info-bg:#112a40;
+  --sev-ok:#8fe6ab;   --sev-ok-bg:#0f3320;
+  --sev-neutral:#b7c2d0; --sev-neutral-bg:#232c38;
+
+  --meter-track:#2a333f; --meter-ok:#3ecb6c; --meter-warn:#e0aa3e; --meter-crit:#ec5a4d;
+  color-scheme: dark;
+}
+
+*{box-sizing:border-box;}
+html,body{margin:0;padding:0;}
+body{
+  background:var(--bg); color:var(--text); font-family:var(--font-sans);
+  font-size:13.5px; line-height:1.55; -webkit-font-smoothing:antialiased;
+}
+.sr-only{
+  position:absolute; width:1px; height:1px; padding:0; margin:-1px; overflow:hidden;
+  clip:rect(0,0,0,0); white-space:nowrap; border:0;
+}
+a{color:var(--accent);}
+a:hover{color:var(--accent-hover);}
+:focus-visible{outline:2px solid var(--accent); outline-offset:2px;}
+
+h1{font-size:26px;font-weight:600;margin:0 0 6px;}
+h2{font-size:19px;font-weight:600;margin:0 0 10px;}
+h3{font-size:15.5px;font-weight:600;margin:0 0 8px;}
+h4{
+  font-size:13.5px;font-weight:600;margin:0 0 8px;
+  text-transform:uppercase; letter-spacing:.06em; color:var(--text-dim);
+}
+
+/* ---------- layout ---------- */
+body{display:flex; align-items:stretch; min-height:100vh;}
+.sidebar{
+  width:288px; min-width:288px; position:sticky; top:0; height:100vh;
+  overflow-y:auto; background:var(--surface); border-right:1px solid var(--border);
+  padding:18px 14px 40px;
+}
+.sidebar-host{
+  font-size:17px; font-weight:700; margin-bottom:12px; word-break:break-word;
+}
+.toc-filter-input{
+  width:100%; padding:7px 10px; margin-bottom:12px; border:1px solid var(--border);
+  border-radius:var(--radius-control); background:var(--surface-2); color:var(--text);
+  font-family:var(--font-sans); font-size:12.5px;
+}
+.toc-list{list-style:none; margin:0; padding-left:0;}
+.toc-list[data-depth="0"]{padding-left:0;}
+.toc-list:not([data-depth="0"]){padding-left:12px; border-left:1px solid var(--border);}
+.toc-item{margin:1px 0;}
+.toc-link{
+  display:flex; align-items:center; gap:6px; padding:5px 8px; border-radius:var(--radius-control);
+  color:var(--text); text-decoration:none; font-size:12.5px; line-height:1.35;
+}
+.toc-link:hover{background:var(--surface-2);}
+.toc-link.active{background:var(--accent-soft); color:var(--accent); font-weight:600;}
+.toc-link-summary{font-weight:600; margin-bottom:8px; border-bottom:1px dashed var(--border); padding-bottom:8px;}
+.toc-id{color:var(--text-dim); font-variant-numeric:tabular-nums; flex-shrink:0;}
+.toc-count{
+  margin-left:auto; font-size:10.5px; background:var(--surface-3); color:var(--text-dim);
+  border-radius:var(--radius-badge); padding:1px 6px;
+}
+
+.main-col{flex:1; min-width:0; display:flex; flex-direction:column;}
+.content{max-width:1180px; padding:28px 36px; width:100%; margin:0 auto;}
+
+.topbar{
+  position:sticky; top:0; z-index:20; display:flex; align-items:center; justify-content:space-between;
+  gap:16px; padding:10px 28px; background:color-mix(in srgb, var(--surface) 85%, transparent);
+  background:var(--surface); backdrop-filter:blur(8px); -webkit-backdrop-filter:blur(8px);
+  border-bottom:1px solid var(--border);
+}
+.topbar-id{display:flex; align-items:center; gap:10px; min-width:0; flex-wrap:wrap;}
+.topbar-host{font-weight:700; font-size:14px;}
+.topbar-date{color:var(--text-dim); font-size:12px;}
+.topbar-score{white-space:nowrap;}
+.topbar-actions{display:flex; align-items:center; gap:8px;}
+.icon-btn{
+  border:1px solid var(--border); background:var(--surface-2); color:var(--text);
+  border-radius:var(--radius-control); width:32px; height:32px; cursor:pointer; font-size:15px;
+  display:flex; align-items:center; justify-content:center;
+}
+.icon-btn:hover{background:var(--surface-3);}
+
+.search-wrap{position:relative;}
+.global-search-input{
+  width:220px; padding:7px 10px; border:1px solid var(--border); border-radius:var(--radius-control);
+  background:var(--surface-2); color:var(--text); font-family:var(--font-sans); font-size:12.5px;
+}
+.search-panel{
+  position:absolute; top:calc(100% + 6px); right:0; width:340px; max-height:420px; overflow-y:auto;
+  background:var(--surface); border:1px solid var(--border-strong); border-radius:var(--radius-card);
+  box-shadow:var(--shadow); z-index:30; padding:6px;
+}
+.search-result{
+  display:flex; justify-content:space-between; gap:10px; width:100%; text-align:left; padding:8px 10px;
+  border:none; background:transparent; color:var(--text); border-radius:var(--radius-control); cursor:pointer;
+  font-size:12.5px;
+}
+.search-result:hover{background:var(--surface-2);}
+.search-result-count{
+  background:var(--surface-3); color:var(--text-dim); border-radius:var(--radius-badge); padding:0 7px; font-size:11px;
+}
+.search-empty{padding:10px; color:var(--text-dim); font-size:12.5px;}
+
+/* ---------- hero / portada ---------- */
+.hero{padding:8px 0 26px; border-bottom:1px solid var(--border); margin-bottom:26px;}
+.hero-subtitle{color:var(--text-dim); margin:0 0 14px; font-size:14px;}
+.role-chips{display:flex; flex-wrap:wrap; gap:8px; margin-bottom:20px;}
+.role-chip{
+  background:var(--accent-soft); color:var(--accent); border-radius:var(--radius-badge);
+  padding:5px 12px; font-size:12px; font-weight:600;
+}
+.role-chip-muted{background:var(--surface-2); color:var(--text-dim); font-weight:400;}
+
+.kpi-grid{
+  display:grid; grid-template-columns:repeat(auto-fit,minmax(180px,1fr)); gap:14px;
+}
+.kpi-card{
+  background:var(--surface); border:1px solid var(--border); border-radius:var(--radius-card);
+  padding:14px 16px; box-shadow:var(--shadow);
+}
+.kpi-label{
+  font-size:11px; text-transform:uppercase; letter-spacing:.06em; color:var(--text-dim); margin-bottom:6px;
+}
+.kpi-value{
+  font-size:26px; font-weight:600; font-variant-numeric:tabular-nums; line-height:1.1;
+}
+.kpi-unit{font-size:13px; font-weight:400; color:var(--text-dim); margin-left:2px;}
+.kpi-context{font-size:11.5px; color:var(--text-dim); margin-top:6px;}
+.kpi-score .kpi-value{font-size:30px;}
+.kpi-crit .kpi-value{color:var(--sev-crit);}
+.kpi-warn .kpi-value{color:var(--sev-warn);}
+
+/* ---------- meters ---------- */
+.meter-track{
+  width:100%; height:7px; border-radius:999px; background:var(--meter-track); overflow:hidden; margin-top:8px;
+}
+.meter-fill{height:100%; border-radius:999px; transition:width .25s ease;}
+.meter-ok{background:var(--meter-ok);}
+.meter-warn{background:var(--meter-warn);}
+.meter-crit{background:var(--meter-crit);}
+.score-track{margin-top:10px; height:8px;}
+
+.cell-meter{display:inline-flex; align-items:center; gap:8px; min-width:110px;}
+.cell-meter .meter-track{width:60px; margin-top:0; flex-shrink:0;}
+.meter-label{font-variant-numeric:tabular-nums; font-size:12px;}
+
+/* ---------- badges ---------- */
+.badge{
+  display:inline-block; padding:2px 9px; border-radius:var(--radius-badge); font-size:11.5px;
+  font-weight:600; line-height:1.6; white-space:nowrap;
+}
+.badge-crit{color:var(--sev-crit); background:var(--sev-crit-bg);}
+.badge-warn{color:var(--sev-warn); background:var(--sev-warn-bg);}
+.badge-info{color:var(--sev-info); background:var(--sev-info-bg);}
+.badge-ok{color:var(--sev-ok); background:var(--sev-ok-bg);}
+.badge-neutral{color:var(--sev-neutral); background:var(--sev-neutral-bg);}
+.count-badge{margin-left:8px; font-weight:400;}
+
+/* ---------- cards / sections ---------- */
+.card{
+  background:var(--surface); border:1px solid var(--border); border-radius:var(--radius-card);
+  padding:22px 24px; margin-bottom:20px; box-shadow:var(--shadow);
+}
+.subsection{margin:16px 0 16px 2px; padding-left:14px; border-left:2px solid var(--border);}
+.section-note{color:var(--text-dim); font-size:12.5px; margin:-4px 0 12px;}
+
+.msg{
+  display:flex; gap:10px; align-items:flex-start; background:var(--surface-2); border:1px solid var(--border);
+  border-radius:var(--radius-card); padding:12px 14px; font-style:normal; color:var(--text-dim);
+}
+.msg p{margin:0;}
+.msg-icon{flex-shrink:0;}
+
+.empty-state{
+  text-align:center; padding:26px 14px; color:var(--text-dim); background:var(--surface-2);
+  border:1px dashed var(--border-strong); border-radius:var(--radius-card);
+}
+.empty-state p{margin:6px 0 0;}
+.empty-icon{font-size:22px;}
+.empty-state-positive{
+  background:var(--sev-ok-bg); border-style:solid; border-color:transparent; color:var(--sev-ok);
+  text-align:left; display:flex; gap:12px; align-items:center; padding:16px 18px;
+}
+.empty-state-positive .empty-icon{font-size:24px;}
+.empty-state-positive p{margin:0; color:var(--text);}
+
+/* ---------- details / summary ---------- */
+details.subsection-details{
+  border:1px solid var(--border); border-radius:var(--radius-card); margin:10px 0; overflow:hidden;
+  background:var(--surface);
+}
+details.subsection-details > summary{
+  cursor:pointer; padding:10px 14px; font-weight:600; list-style:none; display:flex; align-items:center;
+  gap:6px; background:var(--surface-2); user-select:none;
+}
+details.subsection-details > summary::-webkit-details-marker{display:none;}
+details.subsection-details > summary::before{
+  content:"\25B8"; display:inline-block; transition:transform .15s ease; color:var(--text-dim);
+}
+details.subsection-details[open] > summary::before{transform:rotate(90deg);}
+.details-body{padding:14px;}
+
+.footer-details{
+  border:1px solid var(--border); border-radius:var(--radius-card); margin-top:10px; background:var(--surface);
+}
+.footer-details > summary{cursor:pointer; padding:9px 14px; font-weight:600; background:var(--surface-2);}
+.footer-details > summary::-webkit-details-marker{display:none;}
+.footer-details .details-body{padding:12px 14px;}
+
+/* ---------- tables ---------- */
+.table-filter-bar{display:flex; align-items:center; gap:10px; margin-bottom:8px;}
+.table-filter-input{
+  flex:1; max-width:320px; padding:6px 10px; border:1px solid var(--border); border-radius:var(--radius-control);
+  background:var(--surface-2); color:var(--text); font-family:var(--font-sans); font-size:12.5px;
+}
+.table-filter-count{font-size:11.5px; color:var(--text-dim); white-space:nowrap;}
+
+.table-wrap{overflow-x:auto; border:1px solid var(--border); border-radius:var(--radius-card); max-width:100%;}
+.table-wrap.wide{max-width:100%;}
+table.data-table{
+  border-collapse:collapse; width:100%; font-size:12.5px; min-width:480px;
+}
+table.data-table thead th{
+  position:sticky; top:0; background:var(--surface-3); text-align:left; padding:9px 12px;
+  border-bottom:1px solid var(--border-strong); white-space:nowrap; cursor:pointer; user-select:none;
+  font-weight:600; z-index:1;
+}
+table.data-table thead th:hover{background:var(--surface-2);}
+.th-label{margin-right:4px;}
+.sort-ind{display:inline-block; width:10px; color:var(--text-dim); font-size:10px;}
+table.data-table thead th[aria-sort="ascending"] .sort-ind::after{content:"\25B2";}
+table.data-table thead th[aria-sort="descending"] .sort-ind::after{content:"\25BC";}
+table.data-table thead th[aria-sort="none"] .sort-ind::after{content:"\00b7";}
+table.data-table tbody td{
+  padding:8px 12px; border-bottom:1px solid var(--border); vertical-align:top;
+}
+table.data-table tbody tr:nth-child(even){background:var(--surface-2);}
+table.data-table tbody tr:hover{background:var(--accent-soft);}
+table.data-table tbody tr[hidden]{display:none;}
+table.data-table tbody tr.search-hit{outline:2px solid var(--accent); outline-offset:-2px;}
+
+.mono{font-family:var(--font-mono); font-size:12px;}
+.dim{color:var(--text-dim);}
+.truncate{cursor:pointer; border-bottom:1px dotted var(--border-strong);}
+.truncate.is-expanded{white-space:normal; word-break:break-word; display:inline-block;}
+
+.findings-card .table-wrap{max-width:100%;}
+.findings-filterbar{display:flex; flex-wrap:wrap; gap:8px; margin:14px 0 16px;}
+.chip-filter{
+  border:1px solid var(--border); background:var(--surface-2); color:var(--text); border-radius:var(--radius-badge);
+  padding:6px 14px; font-size:12.5px; cursor:pointer; display:flex; align-items:center; gap:6px;
+}
+.chip-filter.active{background:var(--accent); color:#fff; border-color:var(--accent);}
+.chip-filter.sev-crit.active{background:var(--sev-crit); border-color:var(--sev-crit);}
+.chip-filter.sev-warn.active{background:var(--sev-warn); border-color:var(--sev-warn);}
+.chip-filter.sev-info.active{background:var(--sev-info); border-color:var(--sev-info);}
+.chip-filter.sev-ok.active{background:var(--sev-ok); border-color:var(--sev-ok);}
+.chip-count{background:rgba(0,0,0,.12); border-radius:999px; padding:0 6px; font-size:11px;}
+.ver-link{white-space:nowrap; font-size:12px;}
+
+/* ---------- footer ---------- */
+.report-footer{margin-top:30px; padding-top:16px; border-top:1px solid var(--border); color:var(--text-dim); font-size:12px;}
+.footer-meta{margin:0 0 10px;}
+.log-block{
+  font-family:var(--font-mono); font-size:11px; white-space:pre-wrap; word-break:break-word; margin:0;
+  max-height:360px; overflow-y:auto;
+}
+
+/* ---------- print header (repeats via position:fixed while printing) ---------- */
+.print-header{display:none;}
+
+/* ---------- reduced motion ---------- */
+@media (prefers-reduced-motion: reduce){
+  *{transition:none !important; animation:none !important; scroll-behavior:auto !important;}
+}
+
+/* ---------- print ---------- */
+@media print{
+  .sidebar, .topbar, .search-panel, .toc-filter-input, .table-filter-bar, .findings-filterbar,
+  .icon-btn{display:none !important;}
+  .main-col{display:block;}
+  .content{max-width:100%; padding:14px 18px 0; margin:0;}
+  body{background:#fff; color:#000;}
+  *{-webkit-print-color-adjust:exact; print-color-adjust:exact;}
+  .print-header{
+    display:flex !important; justify-content:space-between; position:fixed; top:0; left:0; right:0;
+    font-size:9px; color:#555; border-bottom:1px solid #ccc; padding:4px 10px; background:#fff;
+  }
+  details, details > *{display:block !important;}
+  details > summary::before{display:none;}
+  .card, tr{page-break-inside:avoid;}
+  .card{page-break-before:always;}
+  .card:first-of-type{page-break-before:avoid;}
+  table.data-table{font-size:10px;}
+  a[href^="#"]::after{content:"";}
+}</style></head><body><script>try{var t=localStorage.getItem("asbuilt-theme");if(t==="dark"||t==="light"){document.documentElement.setAttribute("data-theme",t);}}catch(e){}</script><nav class="sidebar" id="sidebar" aria-label="Tabla de contenidos"><div class="sidebar-host">SRV-DEMO-01</div><input type="text" id="toc-filter" class="toc-filter-input" placeholder="Filtrar secciones..." aria-label="Filtrar secciones del indice"><div class="toc-scroll"><a href="#sec-resumen-hallazgos" class="toc-link toc-link-summary" data-target="sec-resumen-hallazgos">&#9873; Resumen de Hallazgos</a><ul class="toc-list" data-depth="0"><li class="toc-item" data-toc-text="1.1 sistema operativo y kernel"><a href="#sec-1-1" class="toc-link" data-target="sec-1-1"><span class="toc-id">1.1</span><span class="toc-title">Sistema Operativo y Kernel</span><span class="toc-count">1</span></a></li><li class="toc-item" data-toc-text="1.2.3 actualizaciones pendientes"><a href="#sec-1-2-3" class="toc-link" data-target="sec-1-2-3"><span class="toc-id">1.2.3</span><span class="toc-title">Actualizaciones Pendientes</span></a></li><li class="toc-item" data-toc-text="1.2 servicios (systemd)"><a href="#sec-1-2" class="toc-link" data-target="sec-1-2"><span class="toc-id">1.2</span><span class="toc-title">Servicios (systemd)</span><span class="toc-count">222</span></a></li><li class="toc-item" data-toc-text="1.3 uso de disco (sistemas de archivos)"><a href="#sec-1-3" class="toc-link" data-target="sec-1-3"><span class="toc-id">1.3</span><span class="toc-title">Uso de Disco (Sistemas de Archivos)</span><span class="toc-count">4</span></a></li><li class="toc-item" data-toc-text="1.7 servidor ssh (configuracion efectiva)"><a href="#sec-1-7" class="toc-link" data-target="sec-1-7"><span class="toc-id">1.7</span><span class="toc-title">Servidor SSH (Configuracion Efectiva)</span><span class="toc-count">103</span></a></li><li class="toc-item" data-toc-text="1.11.2 configuracion tls de openssl"><a href="#sec-1-11-2" class="toc-link" data-target="sec-1-11-2"><span class="toc-id">1.11.2</span><span class="toc-title">Configuracion TLS de OpenSSL</span><span class="toc-count">4</span></a></li><li class="toc-item" data-toc-text="1.8.1 cuentas con privilegios de root (uid 0)"><a href="#sec-1-8-1" class="toc-link" data-target="sec-1-8-1"><span class="toc-id">1.8.1</span><span class="toc-title">Cuentas con Privilegios de Root (UID 0)</span><span class="toc-count">1</span></a></li><li class="toc-item" data-toc-text="1.8.2 grupos con privilegios de sudo"><a href="#sec-1-8-2" class="toc-link" data-target="sec-1-8-2"><span class="toc-id">1.8.2</span><span class="toc-title">Grupos con Privilegios de Sudo</span><span class="toc-count">1</span></a></li><li class="toc-item" data-toc-text="1.8.3 politica de contrasenas (login.defs)"><a href="#sec-1-8-3" class="toc-link" data-target="sec-1-8-3"><span class="toc-id">1.8.3</span><span class="toc-title">Politica de Contrasenas (login.defs)</span><span class="toc-count">3</span></a></li><li class="toc-item" data-toc-text="1.9 control de acceso obligatorio (selinux / apparmor)"><a href="#sec-1-9" class="toc-link" data-target="sec-1-9"><span class="toc-id">1.9</span><span class="toc-title">Control de Acceso Obligatorio (SELinux / AppArmor)</span><span class="toc-count">1</span></a></li><li class="toc-item" data-toc-text="1.4.1 interfaces de red (ipv4)"><a href="#sec-1-4-1" class="toc-link" data-target="sec-1-4-1"><span class="toc-id">1.4.1</span><span class="toc-title">Interfaces de Red (IPv4)</span><span class="toc-count">6</span></a></li><li class="toc-item" data-toc-text="1.4.2 tabla de rutas"><a href="#sec-1-4-2" class="toc-link" data-target="sec-1-4-2"><span class="toc-id">1.4.2</span><span class="toc-title">Tabla de Rutas</span><span class="toc-count">7</span></a></li><li class="toc-item" data-toc-text="1.4.3 puertos en escucha"><a href="#sec-1-4-3" class="toc-link" data-target="sec-1-4-3"><span class="toc-id">1.4.3</span><span class="toc-title">Puertos en Escucha</span><span class="toc-count">75</span></a></li><li class="toc-item" data-toc-text="1.5.1 discos y particiones (lsblk)"><a href="#sec-1-5-1" class="toc-link" data-target="sec-1-5-1"><span class="toc-id">1.5.1</span><span class="toc-title">Discos y Particiones (lsblk)</span><span class="toc-count">40</span></a></li><li class="toc-item" data-toc-text="1.5.2 cifrado de disco (luks)"><a href="#sec-1-5-2" class="toc-link" data-target="sec-1-5-2"><span class="toc-id">1.5.2</span><span class="toc-title">Cifrado de Disco (LUKS)</span></a></li><li class="toc-item" data-toc-text="1.10.1 tareas programadas (cron)"><a href="#sec-1-10-1" class="toc-link" data-target="sec-1-10-1"><span class="toc-id">1.10.1</span><span class="toc-title">Tareas Programadas (cron)</span><span class="toc-count">3</span></a></li><li class="toc-item" data-toc-text="1.10.2 timers de systemd"><a href="#sec-1-10-2" class="toc-link" data-target="sec-1-10-2"><span class="toc-id">1.10.2</span><span class="toc-title">Timers de systemd</span><span class="toc-count">19</span></a></li><li class="toc-item" data-toc-text="1.11 hardening de kernel (sysctl)"><a href="#sec-1-11" class="toc-link" data-target="sec-1-11"><span class="toc-id">1.11</span><span class="toc-title">Hardening de Kernel (sysctl)</span><span class="toc-count">5</span></a></li><li class="toc-item" data-toc-text="1.12 reinicio pendiente"><a href="#sec-1-12" class="toc-link" data-target="sec-1-12"><span class="toc-id">1.12</span><span class="toc-title">Reinicio Pendiente</span><span class="toc-count">1</span></a></li><li class="toc-item" data-toc-text="1.13 certificados tls instalados"><a href="#sec-1-13" class="toc-link" data-target="sec-1-13"><span class="toc-id">1.13</span><span class="toc-title">Certificados TLS Instalados</span><span class="toc-count">1</span></a></li><li class="toc-item" data-toc-text="1.14 firewall"><a href="#sec-1-14" class="toc-link" data-target="sec-1-14"><span class="toc-id">1.14</span><span class="toc-title">Firewall</span><span class="toc-count">3</span></a></li><li class="toc-item" data-toc-text="1.15 roles de servidor (nginx / apache / samba / nfs)"><a href="#sec-1-15" class="toc-link" data-target="sec-1-15"><span class="toc-id">1.15</span><span class="toc-title">Roles de Servidor (nginx / Apache / Samba / NFS)</span></a></li><li class="toc-item" data-toc-text="1.16 hardware del host"><a href="#sec-1-16" class="toc-link" data-target="sec-1-16"><span class="toc-id">1.16</span><span class="toc-title">Hardware del Host</span><span class="toc-count">1</span></a></li><li class="toc-item" data-toc-text="1.17.1 errores recientes del journal"><a href="#sec-1-17-1" class="toc-link" data-target="sec-1-17-1"><span class="toc-id">1.17.1</span><span class="toc-title">Errores Recientes del Journal</span><span class="toc-count">10</span></a></li><li class="toc-item" data-toc-text="1.17.2 intentos de login fallidos"><a href="#sec-1-17-2" class="toc-link" data-target="sec-1-17-2"><span class="toc-id">1.17.2</span><span class="toc-title">Intentos de Login Fallidos</span></a></li><li class="toc-item" data-toc-text="1.8.4 politica de auditoria (auditd)"><a href="#sec-1-8-4" class="toc-link" data-target="sec-1-8-4"><span class="toc-id">1.8.4</span><span class="toc-title">Politica de Auditoria (auditd)</span><span class="toc-count">2</span></a></li><li class="toc-item" data-toc-text="1.8.5 binarios con suid"><a href="#sec-1-8-5" class="toc-link" data-target="sec-1-8-5"><span class="toc-id">1.8.5</span><span class="toc-title">Binarios con SUID</span><span class="toc-count">13</span></a></li><li class="toc-item" data-toc-text="1.8.6 capabilities de linux asignadas"><a href="#sec-1-8-6" class="toc-link" data-target="sec-1-8-6"><span class="toc-id">1.8.6</span><span class="toc-title">Capabilities de Linux Asignadas</span><span class="toc-count">2</span></a></li><li class="toc-item" data-toc-text="1.8.7 usuarios locales"><a href="#sec-1-8-7" class="toc-link" data-target="sec-1-8-7"><span class="toc-id">1.8.7</span><span class="toc-title">Usuarios Locales</span><span class="toc-count">2</span></a></li><li class="toc-item" data-toc-text="1.18 sincronizacion de hora (ntp)"><a href="#sec-1-18" class="toc-link" data-target="sec-1-18"><span class="toc-id">1.18</span><span class="toc-title">Sincronizacion de Hora (NTP)</span><span class="toc-count">1</span></a></li><li class="toc-item" data-toc-text="1.17.3 top 15 procesos por memoria"><a href="#sec-1-17-3" class="toc-link" data-target="sec-1-17-3"><span class="toc-id">1.17.3</span><span class="toc-title">Top 15 Procesos por Memoria</span><span class="toc-count">15</span></a></li><li class="toc-item" data-toc-text="1.17.4 salud smart de discos fisicos"><a href="#sec-1-17-4" class="toc-link" data-target="sec-1-17-4"><span class="toc-id">1.17.4</span><span class="toc-title">Salud SMART de Discos Fisicos</span></a></li><li class="toc-item" data-toc-text="1.17.5 apagados inesperados y reinicios"><a href="#sec-1-17-5" class="toc-link" data-target="sec-1-17-5"><span class="toc-id">1.17.5</span><span class="toc-title">Apagados Inesperados y Reinicios</span></a></li><li class="toc-item" data-toc-text="1.20.1 antivirus / edr detectado"><a href="#sec-1-20-1" class="toc-link" data-target="sec-1-20-1"><span class="toc-id">1.20.1</span><span class="toc-title">Antivirus / EDR Detectado</span></a></li><li class="toc-item" data-toc-text="1.20.2 agentes de backup detectados"><a href="#sec-1-20-2" class="toc-link" data-target="sec-1-20-2"><span class="toc-id">1.20.2</span><span class="toc-title">Agentes de Backup Detectados</span><span class="toc-count">1</span></a></li></ul></div></nav><div class="main-col"><div class="topbar" id="topbar"><div class="topbar-id"><span class="topbar-host">SRV-DEMO-01</span><span class="topbar-date">2026-09-12 09:43</span><span class="badge badge-warn topbar-score">Salud: 80/100</span></div><div class="topbar-actions"><div class="search-wrap"><input type="text" id="global-search" class="global-search-input" placeholder="Buscar en el reporte..." aria-label="Busqueda global"><div id="search-panel" class="search-panel" hidden></div></div><button type="button" id="theme-toggle" class="icon-btn" aria-label="Cambiar tema" title="Cambiar tema">&#9788;</button><button type="button" id="print-btn" class="icon-btn" aria-label="Imprimir reporte" title="Imprimir">&#128438;</button></div></div><div class="print-header"><span>SRV-DEMO-01</span><span>2026-09-12 09:43</span></div><main class="content" id="content"><header class="hero"><h1>Reporte de Configuraci&oacute;n &mdash; SRV-DEMO-01</h1><p class="hero-subtitle">Ubuntu 26.04.1 LTS &middot; Kernel 7.0.0-29-generic &middot; Equipo Fisico</p><div class="role-chips"><span class="role-chip">AppArmor</span></div><div class="kpi-grid"><div class="kpi-card kpi-score"><div class="kpi-label">Puntaje de Salud</div><div class="kpi-value">80<span class="kpi-unit">/100</span></div><div class="meter-track score-track"><div class="meter-fill meter-warn" style="width:80%"></div></div><div class="kpi-context">Segun hallazgos de esta ejecucion</div></div><div class="kpi-card kpi-crit"><div class="kpi-label">Criticos</div><div class="kpi-value">0</div><div class="kpi-context">Hallazgos severidad CRIT</div></div><div class="kpi-card kpi-warn"><div class="kpi-label">Advertencias</div><div class="kpi-value">5</div><div class="kpi-context">Hallazgos severidad WARN</div></div><div class="kpi-card"><div class="kpi-label">Uptime</div><div class="kpi-value">up 4 weeks, 3 days, 22 hours, 9 minutes</div><div class="kpi-context">Desde el ultimo arranque</div></div><div class="kpi-card"><div class="kpi-label">RAM Total</div><div class="kpi-value">15.0<span class="kpi-unit"> GB</span></div><div class="kpi-context">Memoria fisica instalada</div></div><div class="kpi-card"><div class="kpi-label">Disco Mas Ocupado</div><div class="kpi-value">64<span class="kpi-unit">%</span></div><div class="meter-track"><div class="meter-fill meter-ok" style="width:64%"></div></div><div class="kpi-context">Punto de montaje /</div></div><div class="kpi-card"><div class="kpi-label">Parches Pendientes</div><div class="kpi-value">N/D</div><div class="kpi-context">No relevado en esta ejecucion (requiere --include-missing-updates)</div></div></div></header><section class="card findings-card" id="sec-resumen-hallazgos"><h2>Resumen Ejecutivo de Hallazgos</h2><div class="findings-filterbar" role="group" aria-label="Filtrar hallazgos por severidad"><button type="button" class="chip-filter active" data-sev="ALL" aria-pressed="true">Todos <span class="chip-count">11</span></button><button type="button" class="chip-filter sev-crit" data-sev="CRIT" aria-pressed="false">Criticos <span class="chip-count">0</span></button><button type="button" class="chip-filter sev-warn" data-sev="WARN" aria-pressed="false">Advertencias <span class="chip-count">5</span></button><button type="button" class="chip-filter sev-info" data-sev="INFO" aria-pressed="false">Informativos <span class="chip-count">0</span></button><button type="button" class="chip-filter sev-ok" data-sev="OK" aria-pressed="false">Correcto <span class="chip-count">6</span></button></div><div class="table-wrap"><table class="data-table findings-table" id="tbl-hallazgos"><thead><tr><th data-col="0" data-type="text" aria-sort="none">Severidad</th><th data-col="1" data-type="text" aria-sort="none">Categoria</th><th data-col="2" data-type="text" aria-sort="none">Hallazgo</th><th data-col="3" data-type="text" aria-sort="none">Detalle</th><th data-col="4" data-type="text" aria-sort="none">Recomendacion</th><th data-col="5" data-type="text" aria-sort="none">Control</th><th data-col="6" data-type="text" aria-sort="none">&nbsp;</th></tr></thead><tbody><tr data-sev="WARN"><td><span class="badge badge-warn">WARN</span></td><td>Cuentas</td><td>Contrasenas sin vencimiento practico para cuentas nuevas</td><td>PASS_MAX_DAYS=99999 en /etc/login.defs</td><td>Definir una vigencia maxima razonable (por ejemplo 90-180 dias) para cuentas locales nuevas, segun la politica de la organizacion.</td><td>CIS 5.4.1.1 / ISO 27001 A.9.4.3</td><td><a href="#sec-1-8-3" class="ver-link">Ver &rarr;</a></td></tr><tr data-sev="WARN"><td><span class="badge badge-warn">WARN</span></td><td>Mantenimiento</td><td>Reinicio pendiente</td><td>*** System restart required ***</td><td>Planificar una ventana de reinicio: hay actualizaciones (tipicamente de kernel) que no terminaron de aplicarse.</td><td>CIS 1.9 / ISO 27001 A.12.6.1</td><td><a href="#sec-1-12" class="ver-link">Ver &rarr;</a></td></tr><tr data-sev="WARN"><td><span class="badge badge-warn">WARN</span></td><td>Red</td><td>UFW instalado pero inactivo</td><td></td><td>ufw esta instalado pero no filtra trafico (Status: inactive). Activarlo con &#39;ufw enable&#39; si no hay otro control de firewall equivalente (nftables/iptables) cubriendo el equipo.</td><td>CIS 3.5 / ISO 27001 A.13.1.1</td><td><a href="#sec-1-14" class="ver-link">Ver &rarr;</a></td></tr><tr data-sev="WARN"><td><span class="badge badge-warn">WARN</span></td><td>SSH</td><td>Autenticacion por contrasena habilitada en SSH</td><td>PasswordAuthentication=yes</td><td>Preferir autenticacion por clave publica y deshabilitar contrasenas (PasswordAuthentication no) donde sea viable.</td><td>CIS 5.2.10 / ISO 27001 A.9.4.2</td><td><a href="#sec-1-7" class="ver-link">Ver &rarr;</a></td></tr><tr data-sev="WARN"><td><span class="badge badge-warn">WARN</span></td><td>SSH</td><td>Login de root por SSH parcialmente restringido</td><td>PermitRootLogin=prohibit-password</td><td>Revisar si esta restriccion intermedia es la deseada; la mas estricta es &#39;no&#39;.</td><td>CIS 5.2.8</td><td><a href="#sec-1-7" class="ver-link">Ver &rarr;</a></td></tr><tr data-sev="OK"><td><span class="badge badge-ok">OK</span></td><td>Cuentas</td><td>Una sola cuenta con privilegios de UID 0</td><td></td><td>Solo &#39;root&#39; tiene UID 0, como corresponde.</td><td>CIS 6.2 / ISO 27001 A.9.2</td><td><a href="#sec-1-8-1" class="ver-link">Ver &rarr;</a></td></tr><tr data-sev="OK"><td><span class="badge badge-ok">OK</span></td><td>Kernel</td><td>Parametros de hardening de kernel evaluados en valores esperados</td><td></td><td>rp_filter, ASLR y tcp_syncookies estan en los valores recomendados.</td><td>CIS 3.3 / 1.5</td><td><a href="#sec-1-11" class="ver-link">Ver &rarr;</a></td></tr><tr data-sev="OK"><td><span class="badge badge-ok">OK</span></td><td>Mantenimiento</td><td>Reloj sincronizado</td><td></td><td>El reloj del sistema esta sincronizado via NTP.</td><td>CIS 2.1 / ISO 27001 A.12.4.4</td><td><a href="#sec-1-18" class="ver-link">Ver &rarr;</a></td></tr><tr data-sev="OK"><td><span class="badge badge-ok">OK</span></td><td>Red</td><td>Sin puertos sensibles expuestos en todas las interfaces</td><td></td><td>Ninguno de los puertos comunmente sensibles (FTP, Telnet, SMB, MySQL, PostgreSQL, Redis, MongoDB, Elasticsearch) esta en escucha en 0.0.0.0/::.</td><td>CIS 3.2 / ISO 27001 A.13.1.3</td><td><a href="#sec-1-4-3" class="ver-link">Ver &rarr;</a></td></tr><tr data-sev="OK"><td><span class="badge badge-ok">OK</span></td><td>Seguridad</td><td>auditd activo</td><td></td><td>El subsistema de auditoria del kernel esta activo.</td><td>CIS 4.1 / ISO 27001 A.12.4.1</td><td><a href="#sec-1-8-4" class="ver-link">Ver &rarr;</a></td></tr><tr data-sev="OK"><td><span class="badge badge-ok">OK</span></td><td>Storage</td><td>Espacio libre en disco</td><td></td><td>Todos los sistemas de archivos relevados tienen uso por debajo del 80%.</td><td>ISO 27001 A.8.6</td><td><a href="#sec-1-3" class="ver-link">Ver &rarr;</a></td></tr></tbody></table></div></section><section class="card" id="sec-1-1"><h2>1.1 &mdash; Sistema Operativo y Kernel</h2><p class="section-note">Identificacion basica del equipo: distribucion, version de kernel, arquitectura y tiempo desde el ultimo arranque.</p><details class="subsection-details" open><summary>Sistema Operativo y Kernel <span class="badge badge-neutral count-badge">1 filas</span></summary><div class="details-body"><div class="table-wrap"><table class="data-table" id="tbl-1-1" data-total-rows="1"><thead><tr><th data-col="0" data-type="text" aria-sort="none" tabindex="0" role="columnheader"><span class="th-label">Hostname</span><span class="sort-ind" aria-hidden="true"></span></th><th data-col="1" data-type="text" aria-sort="none" tabindex="0" role="columnheader"><span class="th-label">SistemaOperativo</span><span class="sort-ind" aria-hidden="true"></span></th><th data-col="2" data-type="text" aria-sort="none" tabindex="0" role="columnheader"><span class="th-label">Kernel</span><span class="sort-ind" aria-hidden="true"></span></th><th data-col="3" data-type="text" aria-sort="none" tabindex="0" role="columnheader"><span class="th-label">Arquitectura</span><span class="sort-ind" aria-hidden="true"></span></th><th data-col="4" data-type="text" aria-sort="none" tabindex="0" role="columnheader"><span class="th-label">Uptime</span><span class="sort-ind" aria-hidden="true"></span></th></tr></thead><tbody><tr><td>SRV-DEMO-01</td><td>Ubuntu 26.04.1 LTS</td><td>7.0.0-29-generic</td><td>x86_64</td><td>up 4 weeks, 3 days, 22 hours, 9 minutes</td></tr></tbody></table></div></div></details></section><section class="card" id="sec-1-2-3"><h2>1.2.3 &mdash; Actualizaciones Pendientes</h2><p class="section-note">Paquetes con una version mas nueva disponible en los repositorios configurados, marcando cuales vienen de un canal de seguridad.</p><div class="msg"><span class="msg-icon" aria-hidden="true">&#8505;</span><p>Seccion omitida por rendimiento: consultar actualizaciones pendientes puede tardar (dnf/yum consultan los repos por red) y no escala en modo flota. Para incluirla, volver a ejecutar el script agregando --include-missing-updates.</p></div></section><section class="card" id="sec-1-2"><h2>1.2 &mdash; Servicios (systemd)</h2><p class="section-note">Servicios administrados por systemd, con su estado de carga y ejecucion. Un servicio &#39;failed&#39; suele ser el primer sintoma de un problema.</p><details class="subsection-details" open><summary>Servicios (systemd) <span class="badge badge-neutral count-badge">222 filas</span></summary><div class="details-body"><div class="table-wrap"><table class="data-table" id="tbl-1-2" data-total-rows="222"><thead><tr><th data-col="0" data-type="text" aria-sort="none" tabindex="0" role="columnheader"><span class="th-label">Unidad</span><span class="sort-ind" aria-hidden="true"></span></th><th data-col="1" data-type="text" aria-sort="none" tabindex="0" role="columnheader"><span class="th-label">Carga</span><span class="sort-ind" aria-hidden="true"></span></th><th data-col="2" data-type="text" aria-sort="none" tabindex="0" role="columnheader"><span class="th-label">Activo</span><span class="sort-ind" aria-hidden="true"></span></th><th data-col="3" data-type="text" aria-sort="none" tabindex="0" role="columnheader"><span class="th-label">Subestado</span><span class="sort-ind" aria-hidden="true"></span></th><th data-col="4" data-type="text" aria-sort="none" tabindex="0" role="columnheader"><span class="th-label">Descripcion</span><span class="sort-ind" aria-hidden="true"></span></th></tr></thead><tbody><tr><td>accounts-daemon.service</td><td>loaded</td><td>active</td><td>running</td><td>Accounts Service</td></tr><tr><td>alsa-restore.service</td><td>loaded</td><td>active</td><td>exited</td><td>Save/Restore Sound Card State</td></tr><tr><td>alsa-state.service</td><td>loaded</td><td>inactive</td><td>dead</td><td>Manage Sound Card State (restore and store)</td></tr><tr><td>anacron.service</td><td>loaded</td><td>inactive</td><td>dead</td><td>Run anacron jobs</td></tr><tr><td>apparmor.service</td><td>loaded</td><td>active</td><td>exited</td><td>Load AppArmor profiles</td></tr><tr><td>apport-autoreport.service</td><td>loaded</td><td>inactive</td><td>dead</td><td>Process error reports when automatic reporting is enabled</td></tr><tr><td>apport.service</td><td>loaded</td><td>active</td><td>exited</td><td>automatic crash report generation</td></tr><tr><td>apt-daily-upgrade.service</td><td>loaded</td><td>inactive</td><td>dead</td><td>Daily apt upgrade and clean activities</td></tr><tr><td>apt-daily.service</td><td>loaded</td><td>inactive</td><td>dead</td><td>Daily apt download activities</td></tr><tr><td>audit-rules.service</td><td>loaded</td><td>inactive</td><td>dead</td><td>Load Audit Rules</td></tr><tr><td>auditd.service</td><td>loaded</td><td>active</td><td>running</td><td>Security Audit Logging Service</td></tr><tr><td>auto-cpufreq.service</td><td>not-found</td><td>inactive</td><td>dead</td><td>auto-cpufreq.service</td></tr><tr><td>avahi-daemon.service</td><td>loaded</td><td>active</td><td>running</td><td>Avahi mDNS/DNS-SD Stack</td></tr><tr><td>bluetooth.service</td><td>loaded</td><td>active</td><td>running</td><td>Bluetooth service</td></tr><tr><td>cloud-config.service</td><td>loaded</td><td>inactive</td><td>dead</td><td>Cloud-init: Config Stage</td></tr><tr><td>cloud-final.service</td><td>loaded</td><td>inactive</td><td>dead</td><td>Cloud-init: Final Stage</td></tr><tr><td>cloud-init-hotplugd.service</td><td>loaded</td><td>inactive</td><td>dead</td><td>Cloud-init: Hotplug Hook</td></tr><tr><td>cloud-init-local.service</td><td>loaded</td><td>inactive</td><td>dead</td><td>Cloud-init: Local Stage (pre-network)</td></tr><tr><td>cloud-init-main.service</td><td>loaded</td><td>inactive</td><td>dead</td><td>Cloud-init: Single Process</td></tr><tr><td>cloud-init-network.service</td><td>loaded</td><td>inactive</td><td>dead</td><td>Cloud-init: Network Stage</td></tr><tr><td>cloud-init.service</td><td>loaded</td><td>inactive</td><td>dead</td><td>Cloud-init: Network Stage</td></tr><tr><td>colord.service</td><td>loaded</td><td>active</td><td>running</td><td>Manage, Install and Generate Color Profiles</td></tr><tr><td>connman.service</td><td>not-found</td><td>inactive</td><td>dead</td><td>connman.service</td></tr><tr><td>console-screen.service</td><td>not-found</td><td>inactive</td><td>dead</td><td>console-screen.service</td></tr><tr><td>console-setup.service</td><td>loaded</td><td>active</td><td>exited</td><td>Set console font and keymap</td></tr><tr><td>containerd.service</td><td>loaded</td><td>active</td><td>running</td><td>containerd container runtime</td></tr><tr><td>cron.service</td><td>loaded</td><td>active</td><td>running</td><td>Regular background program processing daemon</td></tr><tr><td>cups-browsed.service</td><td>loaded</td><td>active</td><td>running</td><td>Make remote CUPS printers available locally</td></tr><tr><td>cups.service</td><td>loaded</td><td>active</td><td>running</td><td>CUPS Scheduler</td></tr><tr><td>dbus.service</td><td>loaded</td><td>active</td><td>running</td><td>D-Bus System Message Bus</td></tr><tr><td>dmesg.service</td><td>loaded</td><td>inactive</td><td>dead</td><td>Save initial kernel messages after boot</td></tr><tr><td>docker.service</td><td>loaded</td><td>active</td><td>running</td><td>Docker Application Container Engine</td></tr><tr><td>dpkg-db-backup.service</td><td>loaded</td><td>inactive</td><td>dead</td><td>Daily dpkg database backup service</td></tr><tr><td>dracut-shutdown.service</td><td>not-found</td><td>inactive</td><td>dead</td><td>dracut-shutdown.service</td></tr><tr><td>e2scrub_all.service</td><td>loaded</td><td>inactive</td><td>dead</td><td>Online ext4 Metadata Check for All Filesystems</td></tr><tr><td>e2scrub_reap.service</td><td>loaded</td><td>inactive</td><td>dead</td><td>Remove Stale Online ext4 Metadata Check Snapshots</td></tr><tr><td>emergency.service</td><td>loaded</td><td>inactive</td><td>dead</td><td>Emergency Shell</td></tr><tr><td>firewalld.service</td><td>not-found</td><td>inactive</td><td>dead</td><td>firewalld.service</td></tr><tr><td>fstrim.service</td><td>loaded</td><td>inactive</td><td>dead</td><td>Discard unused blocks on filesystems from /etc/fstab</td></tr><tr><td>fwupd-refresh.service</td><td>loaded</td><td>inactive</td><td>dead</td><td>Refresh fwupd metadata and update motd</td></tr><tr><td>fwupd.service</td><td>loaded</td><td>active</td><td>running</td><td>Firmware update daemon</td></tr><tr><td>gdm.service</td><td>loaded</td><td>active</td><td>running</td><td>GNOME Display Manager</td></tr><tr><td>geoclue.service</td><td>loaded</td><td>active</td><td>running</td><td>Location Lookup Service</td></tr><tr><td>getty-static.service</td><td>loaded</td><td>inactive</td><td>dead</td><td>getty on tty2-tty6 if dbus and logind are not available</td></tr><tr><td>getty@tty1.service</td><td>loaded</td><td>inactive</td><td>dead</td><td>Getty on tty1</td></tr><tr><td>gpu-manager.service</td><td>loaded</td><td>inactive</td><td>dead</td><td>Detect the available GPUs and deal with any system changes</td></tr><tr><td>grub-common.service</td><td>loaded</td><td>active</td><td>exited</td><td>LSB: Record successful boot for GRUB</td></tr><tr><td>grub-initrd-fallback.service</td><td>loaded</td><td>inactive</td><td>dead</td><td>GRUB failed boot detection</td></tr><tr><td>grub2-common.service</td><td>loaded</td><td>inactive</td><td>dead</td><td>Record successful boot for GRUB</td></tr><tr><td>hv_kvp_daemon.service</td><td>not-found</td><td>inactive</td><td>dead</td><td>hv_kvp_daemon.service</td></tr><tr><td>iio-sensor-proxy.service</td><td>loaded</td><td>active</td><td>running</td><td>IIO Sensor Proxy service</td></tr><tr><td>initrd-cleanup.service</td><td>loaded</td><td>inactive</td><td>dead</td><td>Cleaning Up and Shutting Down Daemons</td></tr><tr><td>initrd-parse-etc.service</td><td>loaded</td><td>inactive</td><td>dead</td><td>Mountpoints Configured in the Real Root</td></tr><tr><td>initrd-switch-root.service</td><td>loaded</td><td>inactive</td><td>dead</td><td>Switch Root</td></tr><tr><td>initrd-udevadm-cleanup-db.service</td><td>loaded</td><td>inactive</td><td>dead</td><td>Cleanup udev Database</td></tr><tr><td>instsvcdrv.service</td><td>loaded</td><td>active</td><td>exited</td><td>Systems Management Device Drivers</td></tr><tr><td>kbd.service</td><td>not-found</td><td>inactive</td><td>dead</td><td>kbd.service</td></tr><tr><td>kdump-tools.service</td><td>loaded</td><td>active</td><td>exited</td><td>Kernel crash dump capture service</td></tr><tr><td>keyboard-setup.service</td><td>loaded</td><td>active</td><td>exited</td><td>Set the console keyboard layout</td></tr><tr><td>kmod-static-nodes.service</td><td>loaded</td><td>active</td><td>exited</td><td>Create List of Static Device Nodes</td></tr><tr><td>ldconfig.service</td><td>loaded</td><td>inactive</td><td>dead</td><td>Rebuild Dynamic Linker Cache</td></tr><tr><td>logrotate.service</td><td>loaded</td><td>failed</td><td>failed</td><td>Rotate log files</td></tr><tr><td>lxc-monitord.service</td><td>not-found</td><td>inactive</td><td>dead</td><td>lxc-monitord.service</td></tr><tr><td>lxc-net.service</td><td>not-found</td><td>inactive</td><td>dead</td><td>lxc-net.service</td></tr><tr><td>lxc.service</td><td>not-found</td><td>inactive</td><td>dead</td><td>lxc.service</td></tr><tr><td>lxcfs.service</td><td>not-found</td><td>inactive</td><td>dead</td><td>lxcfs.service</td></tr><tr><td>man-db.service</td><td>loaded</td><td>inactive</td><td>dead</td><td>Daily man-db regeneration</td></tr><tr><td>mkinitcpio-generate-shutdown-ramfs.service</td><td>not-found</td><td>inactive</td><td>dead</td><td>mkinitcpio-generate-shutdown-ramfs.service</td></tr><tr><td>ModemManager.service</td><td>loaded</td><td>active</td><td>running</td><td>Modem Manager</td></tr><tr><td>modprobe@configfs.service</td><td>loaded</td><td>inactive</td><td>dead</td><td>Load Kernel Module configfs</td></tr><tr><td>modprobe@dm_mod.service</td><td>loaded</td><td>inactive</td><td>dead</td><td>Load Kernel Module dm_mod</td></tr><tr><td>modprobe@drm.service</td><td>loaded</td><td>inactive</td><td>dead</td><td>Load Kernel Module drm</td></tr><tr><td>modprobe@efi_pstore.service</td><td>loaded</td><td>inactive</td><td>dead</td><td>Load Kernel Module efi_pstore</td></tr><tr><td>modprobe@fuse.service</td><td>loaded</td><td>inactive</td><td>dead</td><td>Load Kernel Module fuse</td></tr><tr><td>modprobe@loop.service</td><td>loaded</td><td>inactive</td><td>dead</td><td>Load Kernel Module loop</td></tr><tr><td>modprobe@sd_mod.service</td><td>loaded</td><td>inactive</td><td>dead</td><td>Load Kernel Module sd_mod</td></tr><tr><td>motd-news.service</td><td>loaded</td><td>inactive</td><td>dead</td><td>Message of the Day</td></tr><tr><td>netplan-configure.service</td><td>loaded</td><td>active</td><td>exited</td><td>Netplan Backend Configuration</td></tr><tr><td>netplan-ovs-cleanup.service</td><td>loaded</td><td>inactive</td><td>dead</td><td>OpenVSwitch configuration for cleanup</td></tr><tr><td>networking.service</td><td>not-found</td><td>inactive</td><td>dead</td><td>networking.service</td></tr><tr><td>NetworkManager-wait-online.service</td><td>loaded</td><td>active</td><td>exited</td><td>Network Manager Wait Online</td></tr><tr><td>NetworkManager.service</td><td>loaded</td><td>active</td><td>running</td><td>Network Manager</td></tr><tr><td>nslcd.service</td><td>not-found</td><td>inactive</td><td>dead</td><td>nslcd.service</td></tr><tr><td>oem-config.service</td><td>not-found</td><td>inactive</td><td>dead</td><td>oem-config.service</td></tr><tr><td>ollama.service</td><td>loaded</td><td>active</td><td>running</td><td>Ollama Service</td></tr><tr><td>openvpn.service</td><td>loaded</td><td>active</td><td>exited</td><td>OpenVPN service</td></tr><tr><td>ovsdb-server.service</td><td>not-found</td><td>inactive</td><td>dead</td><td>ovsdb-server.service</td></tr><tr><td>plymouth-halt.service</td><td>loaded</td><td>inactive</td><td>dead</td><td>Show Plymouth Halt Screen</td></tr><tr><td>plymouth-kexec.service</td><td>loaded</td><td>inactive</td><td>dead</td><td>Show Plymouth Reboot with kexec Screen</td></tr><tr><td>plymouth-poweroff.service</td><td>loaded</td><td>inactive</td><td>dead</td><td>Show Plymouth Power Off Screen</td></tr><tr><td>plymouth-quit-wait.service</td><td>loaded</td><td>active</td><td>exited</td><td>Hold until boot process finishes up</td></tr><tr><td>plymouth-quit.service</td><td>loaded</td><td>inactive</td><td>dead</td><td>Terminate Plymouth Boot Screen</td></tr><tr><td>plymouth-read-write.service</td><td>loaded</td><td>active</td><td>exited</td><td>Tell Plymouth To Write Out Runtime Data</td></tr><tr><td>plymouth-reboot.service</td><td>loaded</td><td>inactive</td><td>dead</td><td>Show Plymouth Reboot Screen</td></tr><tr><td>plymouth-start.service</td><td>loaded</td><td>active</td><td>exited</td><td>Show Plymouth Boot Screen</td></tr><tr><td>plymouth-switch-root-initramfs.service</td><td>loaded</td><td>inactive</td><td>dead</td><td>Tell Plymouth To Jump To initramfs</td></tr><tr><td>plymouth-switch-root.service</td><td>loaded</td><td>inactive</td><td>dead</td><td>Plymouth switch root service</td></tr><tr><td>polkit.service</td><td>loaded</td><td>active</td><td>running</td><td>Authorization Manager</td></tr><tr><td>power-profiles-daemon.service</td><td>loaded</td><td>active</td><td>running</td><td>Power Profiles daemon</td></tr><tr><td>rc-local.service</td><td>loaded</td><td>inactive</td><td>dead</td><td>/etc/rc.local Compatibility</td></tr><tr><td>rescue.service</td><td>loaded</td><td>inactive</td><td>dead</td><td>Rescue Shell</td></tr><tr><td>rsyslog.service</td><td>loaded</td><td>active</td><td>running</td><td>System Logging Service</td></tr><tr><td>rtkit-daemon.service</td><td>loaded</td><td>active</td><td>running</td><td>RealtimeKit Scheduling Policy Service</td></tr><tr><td>secureboot-db.service</td><td>loaded</td><td>inactive</td><td>dead</td><td>Secure Boot updates for DB and DBX</td></tr><tr><td>setvtrgb.service</td><td>loaded</td><td>active</td><td>exited</td><td>Set console scheme</td></tr><tr><td>snap.cups.cups-browsed.service</td><td>loaded</td><td>active</td><td>running</td><td>Service for snap application cups.cups-browsed</td></tr><tr><td>snap.cups.cupsd.service</td><td>loaded</td><td>active</td><td>running</td><td>Service for snap application cups.cupsd</td></tr><tr><td>snapd.apparmor.service</td><td>loaded</td><td>active</td><td>exited</td><td>Load AppArmor profiles managed internally by snapd</td></tr><tr><td>snapd.autoimport.service</td><td>loaded</td><td>inactive</td><td>dead</td><td>Auto import assertions from block devices</td></tr><tr><td>snapd.core-fixup.service</td><td>loaded</td><td>inactive</td><td>dead</td><td>Automatically repair incorrect owner/permissions on core devices</td></tr><tr><td>snapd.failure.service</td><td>loaded</td><td>inactive</td><td>dead</td><td>Failure handling of the snapd snap</td></tr><tr><td>snapd.recovery-chooser-trigger.service</td><td>loaded</td><td>inactive</td><td>dead</td><td>Wait for the Ubuntu Core chooser trigger</td></tr><tr><td>snapd.seeded.service</td><td>loaded</td><td>active</td><td>exited</td><td>Wait until snapd is fully seeded</td></tr><tr><td>snapd.service</td><td>loaded</td><td>active</td><td>running</td><td>Snap Daemon</td></tr><tr><td>snapd.snap-repair.service</td><td>loaded</td><td>inactive</td><td>dead</td><td>Automatically fetch and run repair assertions</td></tr><tr><td>snapd.system-shutdown.service</td><td>loaded</td><td>inactive</td><td>dead</td><td>Ubuntu core (all-snaps) system shutdown helper setup service</td></tr><tr><td>ssh.service</td><td>loaded</td><td>active</td><td>running</td><td>OpenBSD Secure Shell server</td></tr><tr><td>sshd-keygen.service</td><td>loaded</td><td>inactive</td><td>dead</td><td>Generate sshd host keys on first boot</td></tr><tr><td>sshd@sshd-keygen.service</td><td>loaded</td><td>inactive</td><td>dead</td><td>OpenBSD Secure Shell server per-connection daemon</td></tr><tr><td>ssl-cert.service</td><td>loaded</td><td>inactive</td><td>dead</td><td>Generate snakeoil SSL keypair</td></tr><tr><td>sssd-autofs.service</td><td>loaded</td><td>inactive</td><td>dead</td><td>SSSD AutoFS Service responder</td></tr><tr><td>sssd-nss.service</td><td>loaded</td><td>inactive</td><td>dead</td><td>SSSD NSS Service responder</td></tr><tr><td>sssd-pac.service</td><td>loaded</td><td>inactive</td><td>dead</td><td>SSSD PAC Service responder</td></tr><tr><td>sssd-pam.service</td><td>loaded</td><td>inactive</td><td>dead</td><td>SSSD PAM Service responder</td></tr><tr><td>sssd-ssh.service</td><td>loaded</td><td>inactive</td><td>dead</td><td>SSSD SSH Service responder</td></tr><tr><td>sssd-sudo.service</td><td>loaded</td><td>inactive</td><td>dead</td><td>SSSD Sudo Service responder</td></tr><tr><td>sssd.service</td><td>loaded</td><td>inactive</td><td>dead</td><td>System Security Services Daemon</td></tr><tr><td>switcheroo-control.service</td><td>loaded</td><td>active</td><td>running</td><td>Switcheroo Control Proxy service</td></tr><tr><td>sysstat-collect.service</td><td>loaded</td><td>inactive</td><td>dead</td><td>system activity accounting tool</td></tr><tr><td>sysstat-rotate.service</td><td>loaded</td><td>inactive</td><td>dead</td><td>system activity accounting tool</td></tr><tr><td>sysstat-summary.service</td><td>loaded</td><td>inactive</td><td>dead</td><td>Generate a daily summary of process accounting</td></tr><tr><td>sysstat.service</td><td>loaded</td><td>active</td><td>exited</td><td>Resets System Activity Logs</td></tr><tr><td>system76-power.service</td><td>not-found</td><td>inactive</td><td>dead</td><td>system76-power.service</td></tr><tr><td>systemd-ask-password-console.service</td><td>loaded</td><td>inactive</td><td>dead</td><td>Dispatch Password Requests to Console</td></tr><tr><td>systemd-ask-password-plymouth.service</td><td>loaded</td><td>inactive</td><td>dead</td><td>Forward Password Requests to Plymouth</td></tr><tr><td>systemd-ask-password-wall.service</td><td>loaded</td><td>inactive</td><td>dead</td><td>Forward Password Requests to Wall</td></tr><tr><td>systemd-backlight@backlight:intel_backlight.service</td><td>loaded</td><td>active</td><td>exited</td><td>Load/Save Screen Backlight Brightness of backlight:intel_backlight</td></tr><tr><td>systemd-backlight@leds:dell::kbd_backlight.service</td><td>loaded</td><td>active</td><td>exited</td><td>Load/Save Screen Backlight Brightness of leds:dell::kbd_backlight</td></tr><tr><td>systemd-battery-check.service</td><td>loaded</td><td>inactive</td><td>dead</td><td>Early Battery Level Check</td></tr><tr><td>systemd-binfmt.service</td><td>loaded</td><td>active</td><td>exited</td><td>Set Up Additional Binary Formats</td></tr><tr><td>systemd-bsod.service</td><td>loaded</td><td>inactive</td><td>dead</td><td>Display Boot-Time Emergency Messages In Full Screen</td></tr><tr><td>systemd-confext-initrd.service</td><td>loaded</td><td>inactive</td><td>dead</td><td>Merge System Configuration Images into /etc/</td></tr><tr><td>systemd-confext.service</td><td>loaded</td><td>inactive</td><td>dead</td><td>Merge System Configuration Images into /etc/</td></tr><tr><td>systemd-firstboot.service</td><td>loaded</td><td>inactive</td><td>dead</td><td>Initial Setup</td></tr><tr><td>systemd-fsck-root.service</td><td>loaded</td><td>inactive</td><td>dead</td><td>File System Check on Root Device</td></tr><tr><td>systemd-fsck@dev-disk-by\x2duuid-E2E4\x2d6F62.service</td><td>loaded</td><td>active</td><td>exited</td><td>File System Check on /dev/disk/by-uuid/E2E4-6F62</td></tr><tr><td>systemd-halt.service</td><td>loaded</td><td>inactive</td><td>dead</td><td>System Halt</td></tr><tr><td>systemd-hibernate-clear.service</td><td>loaded</td><td>inactive</td><td>dead</td><td>Clear Stale Hibernate Storage Info</td></tr><tr><td>systemd-hibernate-resume.service</td><td>loaded</td><td>inactive</td><td>dead</td><td>Resume from hibernation</td></tr><tr><td>systemd-hostnamed.service</td><td>loaded</td><td>inactive</td><td>dead</td><td>Hostname Service</td></tr><tr><td>systemd-hwdb-update.service</td><td>loaded</td><td>inactive</td><td>dead</td><td>Rebuild Hardware Database</td></tr><tr><td>systemd-journal-catalog-update.service</td><td>loaded</td><td>inactive</td><td>dead</td><td>Rebuild Journal Catalog</td></tr><tr><td>systemd-journal-flush.service</td><td>loaded</td><td>active</td><td>exited</td><td>Flush Journal to Persistent Storage</td></tr><tr><td>systemd-journald.service</td><td>loaded</td><td>active</td><td>running</td><td>Journal Service</td></tr><tr><td>systemd-kexec.service</td><td>loaded</td><td>inactive</td><td>dead</td><td>Reboot via kexec</td></tr><tr><td>systemd-logind.service</td><td>loaded</td><td>active</td><td>running</td><td>User Login Management</td></tr><tr><td>systemd-machine-id-commit.service</td><td>loaded</td><td>inactive</td><td>dead</td><td>Save Transient machine-id to Disk</td></tr><tr><td>systemd-modules-load.service</td><td>loaded</td><td>active</td><td>exited</td><td>Load Kernel Modules</td></tr><tr><td>systemd-networkd-persistent-storage.service</td><td>loaded</td><td>inactive</td><td>dead</td><td>Enable Persistent Storage in systemd-networkd</td></tr><tr><td>systemd-networkd-wait-online.service</td><td>loaded</td><td>inactive</td><td>dead</td><td>Wait for Network to be Online</td></tr><tr><td>systemd-networkd.service</td><td>loaded</td><td>inactive</td><td>dead</td><td>Network Management</td></tr><tr><td>systemd-oomd.service</td><td>loaded</td><td>active</td><td>running</td><td>Userspace Out-Of-Memory (OOM) Killer</td></tr><tr><td>systemd-pcrmachine.service</td><td>loaded</td><td>inactive</td><td>dead</td><td>TPM PCR Machine ID Measurement</td></tr><tr><td>systemd-pcrnvdone.service</td><td>loaded</td><td>inactive</td><td>dead</td><td>TPM PCR NvPCR Initialization Separator</td></tr><tr><td>systemd-pcrphase-initrd.service</td><td>loaded</td><td>inactive</td><td>dead</td><td>TPM PCR Barrier (initrd)</td></tr><tr><td>systemd-pcrphase-sysinit.service</td><td>loaded</td><td>inactive</td><td>dead</td><td>TPM PCR Barrier (Initialization)</td></tr><tr><td>systemd-pcrphase.service</td><td>loaded</td><td>inactive</td><td>dead</td><td>TPM PCR Barrier (User)</td></tr><tr><td>systemd-pcrproduct.service</td><td>loaded</td><td>inactive</td><td>dead</td><td>TPM NvPCR Product ID Measurement</td></tr><tr><td>systemd-poweroff.service</td><td>loaded</td><td>inactive</td><td>dead</td><td>System Power Off</td></tr><tr><td>systemd-pstore.service</td><td>loaded</td><td>inactive</td><td>dead</td><td>Platform Persistent Storage Archival</td></tr><tr><td>systemd-quotacheck-root.service</td><td>loaded</td><td>inactive</td><td>dead</td><td>Root File System Quota Check</td></tr><tr><td>systemd-quotacheck.service</td><td>not-found</td><td>inactive</td><td>dead</td><td>systemd-quotacheck.service</td></tr><tr><td>systemd-random-seed.service</td><td>loaded</td><td>active</td><td>exited</td><td>Load/Save OS Random Seed</td></tr><tr><td>systemd-reboot.service</td><td>loaded</td><td>inactive</td><td>dead</td><td>System Reboot</td></tr><tr><td>systemd-remount-fs.service</td><td>loaded</td><td>active</td><td>exited</td><td>Remount Root and Kernel File Systems</td></tr><tr><td>systemd-resolved.service</td><td>loaded</td><td>active</td><td>running</td><td>Network Name Resolution</td></tr><tr><td>systemd-rfkill.service</td><td>loaded</td><td>inactive</td><td>dead</td><td>Load/Save RF Kill Switch Status</td></tr><tr><td>systemd-soft-reboot.service</td><td>loaded</td><td>inactive</td><td>dead</td><td>Reboot System Userspace</td></tr><tr><td>systemd-suspend-then-hibernate.service</td><td>loaded</td><td>inactive</td><td>dead</td><td>System Suspend then Hibernate</td></tr><tr><td>systemd-sysctl.service</td><td>loaded</td><td>active</td><td>exited</td><td>Apply Kernel Variables</td></tr><tr><td>systemd-sysext-initrd.service</td><td>loaded</td><td>inactive</td><td>dead</td><td>Merge System Extension Images into /usr/ and /opt/</td></tr><tr><td>systemd-sysext.service</td><td>loaded</td><td>inactive</td><td>dead</td><td>Merge System Extension Images into /usr/ and /opt/</td></tr><tr><td>systemd-sysusers.service</td><td>loaded</td><td>inactive</td><td>dead</td><td>Create System Users</td></tr><tr><td>systemd-timesyncd.service</td><td>loaded</td><td>active</td><td>running</td><td>Network Time Synchronization</td></tr><tr><td>systemd-tmpfiles-clean.service</td><td>loaded</td><td>inactive</td><td>dead</td><td>Cleanup of Temporary Directories</td></tr><tr><td>systemd-tmpfiles-setup-dev-early.service</td><td>loaded</td><td>active</td><td>exited</td><td>Create Static Device Nodes in /dev gracefully</td></tr><tr><td>systemd-tmpfiles-setup-dev.service</td><td>loaded</td><td>active</td><td>exited</td><td>Create Static Device Nodes in /dev</td></tr><tr><td>systemd-tmpfiles-setup.service</td><td>loaded</td><td>active</td><td>exited</td><td>Create System Files and Directories</td></tr><tr><td>systemd-tpm2-setup-early.service</td><td>loaded</td><td>inactive</td><td>dead</td><td>Early TPM SRK Setup</td></tr><tr><td>systemd-tpm2-setup.service</td><td>loaded</td><td>inactive</td><td>dead</td><td>TPM SRK Setup</td></tr><tr><td>systemd-udev-load-credentials.service</td><td>loaded</td><td>active</td><td>exited</td><td>Load udev Rules from Credentials</td></tr><tr><td>systemd-udev-settle.service</td><td>loaded</td><td>inactive</td><td>dead</td><td>Wait for udev To Complete Device Initialization</td></tr><tr><td>systemd-udev-trigger.service</td><td>loaded</td><td>active</td><td>exited</td><td>Coldplug All udev Devices</td></tr><tr><td>systemd-udevd.service</td><td>loaded</td><td>active</td><td>running</td><td>Rule-based Manager for Device Events and Files</td></tr><tr><td>systemd-update-done.service</td><td>loaded</td><td>inactive</td><td>dead</td><td>Update is Completed</td></tr><tr><td>systemd-user-sessions.service</td><td>loaded</td><td>active</td><td>exited</td><td>Permit User Sessions</td></tr><tr><td>systemd-vconsole-setup.service</td><td>not-found</td><td>inactive</td><td>dead</td><td>systemd-vconsole-setup.service</td></tr><tr><td>thermald.service</td><td>loaded</td><td>active</td><td>running</td><td>Thermal Daemon Service</td></tr><tr><td>tlp.service</td><td>not-found</td><td>inactive</td><td>dead</td><td>tlp.service</td></tr><tr><td>tpm-udev.service</td><td>loaded</td><td>inactive</td><td>dead</td><td>Handle dynamically added tpm devices</td></tr><tr><td>tuned.service</td><td>not-found</td><td>inactive</td><td>dead</td><td>tuned.service</td></tr><tr><td>ua-auto-attach.service</td><td>not-found</td><td>inactive</td><td>dead</td><td>ua-auto-attach.service</td></tr><tr><td>ua-reboot-cmds.service</td><td>loaded</td><td>inactive</td><td>dead</td><td>Ubuntu Pro reboot cmds</td></tr><tr><td>ua-timer.service</td><td>loaded</td><td>inactive</td><td>dead</td><td>Ubuntu Pro Timer for running repeated jobs</td></tr><tr><td>ubuntu-advantage-cloud-id-shim.service</td><td>not-found</td><td>inactive</td><td>dead</td><td>ubuntu-advantage-cloud-id-shim.service</td></tr><tr><td>ubuntu-advantage.service</td><td>loaded</td><td>inactive</td><td>dead</td><td>Ubuntu Pro Background Auto Attach</td></tr><tr><td>udisks2.service</td><td>loaded</td><td>active</td><td>running</td><td>Disk Manager</td></tr><tr><td>ufw.service</td><td>loaded</td><td>active</td><td>exited</td><td>Uncomplicated firewall</td></tr><tr><td>unattended-upgrades.service</td><td>loaded</td><td>active</td><td>running</td><td>Unattended Upgrades Shutdown</td></tr><tr><td>update-notifier-download.service</td><td>loaded</td><td>inactive</td><td>dead</td><td>Download data for packages that failed at package install time</td></tr><tr><td>update-notifier-motd.service</td><td>loaded</td><td>inactive</td><td>dead</td><td>Check to see whether there is a new version of Ubuntu available</td></tr><tr><td>upower.service</td><td>loaded</td><td>active</td><td>running</td><td>Daemon for power management</td></tr><tr><td>user-runtime-dir@1000.service</td><td>loaded</td><td>active</td><td>exited</td><td>User Runtime Directory /run/user/1000</td></tr><tr><td>user@1000.service</td><td>loaded</td><td>active</td><td>running</td><td>User Manager for UID 1000</td></tr><tr><td>uuidd.service</td><td>loaded</td><td>active</td><td>running</td><td>Daemon for generating UUIDs</td></tr><tr><td>waydroid-container.service</td><td>not-found</td><td>inactive</td><td>dead</td><td>waydroid-container.service</td></tr><tr><td>whoopsie.service</td><td>loaded</td><td>inactive</td><td>dead</td><td>Service uploading crash reports to the Ubuntu Error Tracker</td></tr><tr><td>wpa_supplicant.service</td><td>loaded</td><td>active</td><td>running</td><td>WPA supplicant</td></tr><tr><td>xrdp-sesman.service</td><td>loaded</td><td>active</td><td>running</td><td>xrdp session manager</td></tr><tr><td>xrdp.service</td><td>loaded</td><td>active</td><td>running</td><td>xrdp daemon</td></tr><tr><td>zerotier-one.service</td><td>loaded</td><td>active</td><td>running</td><td>ZeroTier One</td></tr><tr><td>zfs-mount.service</td><td>not-found</td><td>inactive</td><td>dead</td><td>zfs-mount.service</td></tr></tbody></table></div></div></details></section><section class="card" id="sec-1-3"><h2>1.3 &mdash; Uso de Disco (Sistemas de Archivos)</h2><p class="section-note">Ocupacion de cada sistema de archivos montado: total, usado, libre y porcentaje. Un volumen por encima del 80% suele necesitar planificacion de espacio.</p><details class="subsection-details" open><summary>Uso de Disco (Sistemas de Archivos) <span class="badge badge-neutral count-badge">4 filas</span></summary><div class="details-body"><div class="table-wrap"><table class="data-table" id="tbl-1-3" data-total-rows="4"><thead><tr><th data-col="0" data-type="text" aria-sort="none" tabindex="0" role="columnheader"><span class="th-label">PuntoMontaje</span><span class="sort-ind" aria-hidden="true"></span></th><th data-col="1" data-type="text" aria-sort="none" tabindex="0" role="columnheader"><span class="th-label">SistemaArchivos</span><span class="sort-ind" aria-hidden="true"></span></th><th data-col="2" data-type="text" aria-sort="none" tabindex="0" role="columnheader"><span class="th-label">TotalKB</span><span class="sort-ind" aria-hidden="true"></span></th><th data-col="3" data-type="text" aria-sort="none" tabindex="0" role="columnheader"><span class="th-label">UsadoKB</span><span class="sort-ind" aria-hidden="true"></span></th><th data-col="4" data-type="text" aria-sort="none" tabindex="0" role="columnheader"><span class="th-label">LibreKB</span><span class="sort-ind" aria-hidden="true"></span></th><th data-col="5" data-type="text" aria-sort="none" tabindex="0" role="columnheader"><span class="th-label">UsoPct</span><span class="sort-ind" aria-hidden="true"></span></th></tr></thead><tbody><tr><td>/</td><td>/dev/sda2</td><td>228554124</td><td>136718912</td><td>80152448</td><td>64%</td></tr><tr><td>/sys/firmware/efi/efivars</td><td>efivarfs</td><td>384</td><td>232</td><td>148</td><td>62%</td></tr><tr><td>/boot/efi</td><td>/dev/sda1</td><td>1098628</td><td>6452</td><td>1092176</td><td>1%</td></tr><tr><td>/run/media/demo/9479-E1FF</td><td>/dev/sdb</td><td>4072</td><td>4</td><td>4068</td><td>1%</td></tr></tbody></table></div></div></details></section><section class="card" id="sec-1-7"><h2>1.7 &mdash; Servidor SSH (Configuracion Efectiva)</h2><p class="section-note">Configuracion EFECTIVA de sshd (&#39;sshd -T&#39;: sshd_config combinado con los valores por defecto de OpenSSH). Equivalente Linux de la seccion SChannel del proyecto Windows.</p><details class="subsection-details" open><summary>Servidor SSH (Configuracion Efectiva) <span class="badge badge-neutral count-badge">103 filas</span></summary><div class="details-body"><div class="table-wrap"><table class="data-table" id="tbl-1-7" data-total-rows="103"><thead><tr><th data-col="0" data-type="text" aria-sort="none" tabindex="0" role="columnheader"><span class="th-label">Directiva</span><span class="sort-ind" aria-hidden="true"></span></th><th data-col="1" data-type="text" aria-sort="none" tabindex="0" role="columnheader"><span class="th-label">Valor</span><span class="sort-ind" aria-hidden="true"></span></th></tr></thead><tbody><tr><td>port</td><td>22</td></tr><tr><td>addressfamily</td><td>any</td></tr><tr><td>listenaddress</td><td>[::]:22</td></tr><tr><td>listenaddress</td><td>0.0.0.0:22</td></tr><tr><td>usepam</td><td>yes</td></tr><tr><td>pamservicename</td><td>sshd</td></tr><tr><td>logingracetime</td><td>120</td></tr><tr><td>x11displayoffset</td><td>10</td></tr><tr><td>maxauthtries</td><td>6</td></tr><tr><td>maxsessions</td><td>10</td></tr><tr><td>clientaliveinterval</td><td>0</td></tr><tr><td>clientalivecountmax</td><td>3</td></tr><tr><td>requiredrsasize</td><td>1024</td></tr><tr><td>streamlocalbindmask</td><td>0177</td></tr><tr><td>unusedconnectiontimeout</td><td>none</td></tr><tr><td>permitrootlogin</td><td>prohibit-password</td></tr><tr><td>ignorerhosts</td><td>yes</td></tr><tr><td>ignoreuserknownhosts</td><td>no</td></tr><tr><td>hostbasedauthentication</td><td>no</td></tr><tr><td>hostbasedusesnamefrompacketonly</td><td>no</td></tr><tr><td>pubkeyauthentication</td><td>yes</td></tr><tr><td>kerberosauthentication</td><td>no</td></tr><tr><td>kerberosorlocalpasswd</td><td>yes</td></tr><tr><td>kerberosticketcleanup</td><td>yes</td></tr><tr><td>gssapiauthentication</td><td>no</td></tr><tr><td>gssapicleanupcredentials</td><td>yes</td></tr><tr><td>gssapistrictacceptorcheck</td><td>yes</td></tr><tr><td>gssapikeyexchange</td><td>no</td></tr><tr><td>gssapistorecredentialsonrekey</td><td>no</td></tr><tr><td>gssapikexalgorithms</td><td>gss-group14-sha256-,gss-group16-sha512-,gss-nistp256-sha256-,gss-curve25519-sha256-</td></tr><tr><td>passwordauthentication</td><td>yes</td></tr><tr><td>kbdinteractiveauthentication</td><td>no</td></tr><tr><td>printmotd</td><td>no</td></tr><tr><td>printlastlog</td><td>yes</td></tr><tr><td>x11forwarding</td><td>yes</td></tr><tr><td>x11uselocalhost</td><td>yes</td></tr><tr><td>permittty</td><td>yes</td></tr><tr><td>permituserrc</td><td>yes</td></tr><tr><td>strictmodes</td><td>yes</td></tr><tr><td>tcpkeepalive</td><td>yes</td></tr><tr><td>permitemptypasswords</td><td>no</td></tr><tr><td>compression</td><td>yes</td></tr><tr><td>gatewayports</td><td>no</td></tr><tr><td>usedns</td><td>no</td></tr><tr><td>allowtcpforwarding</td><td>yes</td></tr><tr><td>allowagentforwarding</td><td>yes</td></tr><tr><td>disableforwarding</td><td>no</td></tr><tr><td>allowstreamlocalforwarding</td><td>yes</td></tr><tr><td>streamlocalbindunlink</td><td>no</td></tr><tr><td>fingerprinthash</td><td>SHA256</td></tr><tr><td>exposeauthinfo</td><td>no</td></tr><tr><td>refuseconnection</td><td>no</td></tr><tr><td>debianbanner</td><td>yes</td></tr><tr><td>pidfile</td><td>/run/sshd.pid</td></tr><tr><td>modulifile</td><td>/etc/ssh/moduli</td></tr><tr><td>xauthlocation</td><td>/usr/bin/xauth</td></tr><tr><td>ciphers</td><td>chacha20-poly1305@openssh.com,aes128-gcm@openssh.com,aes256-gcm@openssh.com,aes128-ctr,aes192-ctr,aes256-ctr</td></tr><tr><td>macs</td><td>umac-64-etm@openssh.com,umac-128-etm@openssh.com,hmac-sha2-256-etm@openssh.com,hmac-sha2-512-etm@openssh.com,hmac-sha1-etm@openssh.com,umac-64@openssh.com,umac-128@openssh.com,hmac-sha2-256,hmac-sha2-512,hmac-sha1</td></tr><tr><td>banner</td><td>none</td></tr><tr><td>forcecommand</td><td>none</td></tr><tr><td>chrootdirectory</td><td>none</td></tr><tr><td>trustedusercakeys</td><td>none</td></tr><tr><td>revokedkeys</td><td>none</td></tr><tr><td>securitykeyprovider</td><td>internal</td></tr><tr><td>authorizedprincipalsfile</td><td>none</td></tr><tr><td>versionaddendum</td><td>none</td></tr><tr><td>authorizedkeyscommand</td><td>none</td></tr><tr><td>authorizedkeyscommanduser</td><td>none</td></tr><tr><td>authorizedprincipalscommand</td><td>none</td></tr><tr><td>authorizedprincipalscommanduser</td><td>none</td></tr><tr><td>hostkeyagent</td><td>none</td></tr><tr><td>kexalgorithms</td><td>mlkem768x25519-sha256,sntrup761x25519-sha512,sntrup761x25519-sha512@openssh.com,curve25519-sha256,curve25519-sha256@libssh.org,ecdh-sha2-nistp256,ecdh-sha2-nistp384,ecdh-sha2-nistp521</td></tr><tr><td>casignaturealgorithms</td><td>ssh-ed25519,ecdsa-sha2-nistp256,ecdsa-sha2-nistp384,ecdsa-sha2-nistp521,sk-ssh-ed25519@openssh.com,sk-ecdsa-sha2-nistp256@openssh.com,rsa-sha2-512,rsa-sha2-256</td></tr><tr><td>hostbasedacceptedalgorithms</td><td>ssh-ed25519-cert-v01@openssh.com,ecdsa-sha2-nistp256-cert-v01@openssh.com,ecdsa-sha2-nistp384-cert-v01@openssh.com,ecdsa-sha2-nistp521-cert-v01@openssh.com,sk-ssh-ed25519-cert-v01@openssh.com,sk-ecdsa-sha2-nistp256-cert-v01@openssh.com,rsa-sha2-512-cert-v01@openssh.com,rsa-sha2-256-cert-v01@openssh.com,ssh-ed25519,ecdsa-sha2-nistp256,ecdsa-sha2-nistp384,ecdsa-sha2-nistp521,sk-ssh-ed25519@openssh.com,sk-ecdsa-sha2-nistp256@openssh.com,rsa-sha2-512,rsa-sha2-256</td></tr><tr><td>hostkeyalgorithms</td><td>ssh-ed25519-cert-v01@openssh.com,ecdsa-sha2-nistp256-cert-v01@openssh.com,ecdsa-sha2-nistp384-cert-v01@openssh.com,ecdsa-sha2-nistp521-cert-v01@openssh.com,sk-ssh-ed25519-cert-v01@openssh.com,sk-ecdsa-sha2-nistp256-cert-v01@openssh.com,rsa-sha2-512-cert-v01@openssh.com,rsa-sha2-256-cert-v01@openssh.com,ssh-ed25519,ecdsa-sha2-nistp256,ecdsa-sha2-nistp384,ecdsa-sha2-nistp521,sk-ssh-ed25519@openssh.com,sk-ecdsa-sha2-nistp256@openssh.com,rsa-sha2-512,rsa-sha2-256</td></tr><tr><td>pubkeyacceptedalgorithms</td><td>ssh-ed25519-cert-v01@openssh.com,ecdsa-sha2-nistp256-cert-v01@openssh.com,ecdsa-sha2-nistp384-cert-v01@openssh.com,ecdsa-sha2-nistp521-cert-v01@openssh.com,sk-ssh-ed25519-cert-v01@openssh.com,sk-ecdsa-sha2-nistp256-cert-v01@openssh.com,rsa-sha2-512-cert-v01@openssh.com,rsa-sha2-256-cert-v01@openssh.com,ssh-ed25519,ecdsa-sha2-nistp256,ecdsa-sha2-nistp384,ecdsa-sha2-nistp521,sk-ssh-ed25519@openssh.com,sk-ecdsa-sha2-nistp256@openssh.com,rsa-sha2-512,rsa-sha2-256</td></tr><tr><td>sshdsessionpath</td><td>/usr/lib/openssh/sshd-session</td></tr><tr><td>sshdauthpath</td><td>/usr/lib/openssh/sshd-auth</td></tr><tr><td>persourcepenaltyexemptlist</td><td>none</td></tr><tr><td>loglevel</td><td>INFO</td></tr><tr><td>syslogfacility</td><td>AUTH</td></tr><tr><td>authorizedkeysfile</td><td>.ssh/authorized_keys .ssh/authorized_keys2</td></tr><tr><td>hostkey</td><td>/etc/ssh/ssh_host_rsa_key</td></tr><tr><td>hostkey</td><td>/etc/ssh/ssh_host_ecdsa_key</td></tr><tr><td>hostkey</td><td>/etc/ssh/ssh_host_ed25519_key</td></tr><tr><td>acceptenv</td><td>LANG</td></tr><tr><td>acceptenv</td><td>LC_*</td></tr><tr><td>acceptenv</td><td>COLORTERM</td></tr><tr><td>acceptenv</td><td>NO_COLOR</td></tr><tr><td>authenticationmethods</td><td>any</td></tr><tr><td>channeltimeout</td><td>none</td></tr><tr><td>subsystem</td><td>sftp /usr/lib/openssh/sftp-server</td></tr><tr><td>maxstartups</td><td>10:30:100</td></tr><tr><td>persourcemaxstartups</td><td>none</td></tr><tr><td>persourcenetblocksize</td><td>32:128</td></tr><tr><td>permittunnel</td><td>no</td></tr><tr><td>ipqos</td><td>ef cs0</td></tr><tr><td>rekeylimit</td><td>0 0</td></tr><tr><td>permitopen</td><td>any</td></tr><tr><td>permitlisten</td><td>any</td></tr><tr><td>permituserenvironment</td><td>no</td></tr><tr><td>pubkeyauthoptions</td><td>none</td></tr><tr><td>persourcepenalties</td><td>crash:90 authfail:5 noauth:1 grace-exceeded:10 refuseconnection:10 max:600 min:15 max-sources4:65536 max-sources6:65536 overflow:permissive overflow6:permissive</td></tr></tbody></table></div></div></details></section><section class="card" id="sec-1-11-2"><h2>1.11.2 &mdash; Configuracion TLS de OpenSSL</h2><p class="section-note">Version de OpenSSL y piso de protocolo/cifrado configurado explicitamente a nivel de sistema, si lo hay. Sin MinProtocol/CipherString explicitos (el caso mas comun en Debian/Ubuntu), el minimo real depende de como se compilo esa version de OpenSSL, dato que esta herramienta no puede leer con certeza sin abrir una conexion TLS real -- y al ser de solo lectura, no lo hace. Como referencia: OpenSSL 3.x deshabilita TLS 1.0/1.1 por defecto desde su lanzamiento en 2021, salvo reconfiguracion explicita. Equivalente Linux de Protocolos/Cifrados SChannel de la version Windows, con un mecanismo de auditoria necesariamente distinto: no existe un registro central de TLS en Linux como en Windows.</p><details class="subsection-details" open><summary>Configuracion TLS de OpenSSL <span class="badge badge-neutral count-badge">4 filas</span></summary><div class="details-body"><div class="table-wrap"><table class="data-table" id="tbl-1-11-2" data-total-rows="4"><thead><tr><th data-col="0" data-type="text" aria-sort="none" tabindex="0" role="columnheader"><span class="th-label">Campo</span><span class="sort-ind" aria-hidden="true"></span></th><th data-col="1" data-type="text" aria-sort="none" tabindex="0" role="columnheader"><span class="th-label">Valor</span><span class="sort-ind" aria-hidden="true"></span></th></tr></thead><tbody><tr><td>VersionOpenSSL</td><td>OpenSSL 3.5.5 27 Jan 2026 (Library: OpenSSL 3.5.5 27 Jan 2026)</td></tr><tr><td>MinProtocol (openssl.cnf)</td><td>N/D</td></tr><tr><td>CipherString (openssl.cnf)</td><td>N/D</td></tr><tr><td>Politica RHEL (update-crypto-policies)</td><td>N/D</td></tr></tbody></table></div></div></details></section><section class="card" id="sec-1-8-1"><h2>1.8.1 &mdash; Cuentas con Privilegios de Root (UID 0)</h2><p class="section-note">Toda cuenta local con UID 0 tiene privilegios completos de root, sin importar su nombre. Deberia existir una sola: &#39;root&#39;. Una segunda cuenta con UID 0 es la puerta trasera mas clasica de todas.</p><details class="subsection-details" open><summary>Cuentas con Privilegios de Root (UID 0) <span class="badge badge-neutral count-badge">1 filas</span></summary><div class="details-body"><div class="table-wrap"><table class="data-table" id="tbl-1-8-1" data-total-rows="1"><thead><tr><th data-col="0" data-type="text" aria-sort="none" tabindex="0" role="columnheader"><span class="th-label">Usuario</span><span class="sort-ind" aria-hidden="true"></span></th><th data-col="1" data-type="text" aria-sort="none" tabindex="0" role="columnheader"><span class="th-label">UID</span><span class="sort-ind" aria-hidden="true"></span></th><th data-col="2" data-type="text" aria-sort="none" tabindex="0" role="columnheader"><span class="th-label">GID</span><span class="sort-ind" aria-hidden="true"></span></th><th data-col="3" data-type="text" aria-sort="none" tabindex="0" role="columnheader"><span class="th-label">Shell</span><span class="sort-ind" aria-hidden="true"></span></th><th data-col="4" data-type="text" aria-sort="none" tabindex="0" role="columnheader"><span class="th-label">DirectorioHome</span><span class="sort-ind" aria-hidden="true"></span></th></tr></thead><tbody><tr><td>r****</td><td>0</td><td>0</td><td>/bin/bash</td><td>/root</td></tr></tbody></table></div></div></details></section><section class="card" id="sec-1-8-2"><h2>1.8.2 &mdash; Grupos con Privilegios de Sudo</h2><p class="section-note">Miembros de los grupos sudo/wheel (privilegios administrativos via sudo) y archivos de reglas adicionales en /etc/sudoers.d. Solo se listan los nombres de archivo, nunca su contenido.</p><details class="subsection-details" open><summary>Grupos con Privilegios de Sudo <span class="badge badge-neutral count-badge">1 filas</span></summary><div class="details-body"><div class="table-wrap"><table class="data-table" id="tbl-1-8-2" data-total-rows="1"><thead><tr><th data-col="0" data-type="text" aria-sort="none" tabindex="0" role="columnheader"><span class="th-label">Grupo</span><span class="sort-ind" aria-hidden="true"></span></th><th data-col="1" data-type="text" aria-sort="none" tabindex="0" role="columnheader"><span class="th-label">Miembros</span><span class="sort-ind" aria-hidden="true"></span></th><th data-col="2" data-type="text" aria-sort="none" tabindex="0" role="columnheader"><span class="th-label">ArchivosEnSudoersD</span><span class="sort-ind" aria-hidden="true"></span></th></tr></thead><tbody><tr><td>sudo</td><td>k****,k****</td><td>90-cat-sfr-test</td></tr></tbody></table></div></div></details></section><section class="card" id="sec-1-8-3"><h2>1.8.3 &mdash; Politica de Contrasenas (login.defs)</h2><p class="section-note">Valores por defecto de vigencia de contrasena para cuentas locales NUEVAS: dias maximos/minimos entre cambios y dias de aviso antes de expirar. Una cuenta ya creada puede tener sus propios valores via &#39;chage&#39;, que esta tabla no muestra.</p><details class="subsection-details" open><summary>Politica de Contrasenas (login.defs) <span class="badge badge-neutral count-badge">3 filas</span></summary><div class="details-body"><div class="table-wrap"><table class="data-table" id="tbl-1-8-3" data-total-rows="3"><thead><tr><th data-col="0" data-type="text" aria-sort="none" tabindex="0" role="columnheader"><span class="th-label">Parametro</span><span class="sort-ind" aria-hidden="true"></span></th><th data-col="1" data-type="text" aria-sort="none" tabindex="0" role="columnheader"><span class="th-label">Valor</span><span class="sort-ind" aria-hidden="true"></span></th></tr></thead><tbody><tr><td>PASS_MAX_DAYS</td><td>99999</td></tr><tr><td>PASS_MIN_DAYS</td><td>0</td></tr><tr><td>PASS_WARN_AGE</td><td>7</td></tr></tbody></table></div></div></details></section><section class="card" id="sec-1-9"><h2>1.9 &mdash; Control de Acceso Obligatorio (SELinux / AppArmor)</h2><p class="section-note">Estado del mecanismo de control de acceso obligatorio (MAC) activo en el equipo. SELinux en modo Permissive o Disabled, o AppArmor sin perfiles en enforce, reducen el aislamiento entre procesos frente a una vulnerabilidad explotada.</p><details class="subsection-details" open><summary>Control de Acceso Obligatorio (SELinux / AppArmor) <span class="badge badge-neutral count-badge">1 filas</span></summary><div class="details-body"><div class="table-wrap"><table class="data-table" id="tbl-1-9" data-total-rows="1"><thead><tr><th data-col="0" data-type="text" aria-sort="none" tabindex="0" role="columnheader"><span class="th-label">Mecanismo</span><span class="sort-ind" aria-hidden="true"></span></th><th data-col="1" data-type="text" aria-sort="none" tabindex="0" role="columnheader"><span class="th-label">Estado</span><span class="sort-ind" aria-hidden="true"></span></th><th data-col="2" data-type="text" aria-sort="none" tabindex="0" role="columnheader"><span class="th-label">Detalle</span><span class="sort-ind" aria-hidden="true"></span></th></tr></thead><tbody><tr><td>AppArmor</td><td>Activo</td><td>298 perfiles cargados, 213 en modo enforce, 8 en modo complain</td></tr></tbody></table></div></div></details></section><section class="card" id="sec-1-4-1"><h2>1.4.1 &mdash; Interfaces de Red (IPv4)</h2><p class="section-note">Interfaces de red con sus direcciones IPv4, prefijo de red, direccion de broadcast y scope (host/link/global).</p><details class="subsection-details" open><summary>Interfaces de Red (IPv4) <span class="badge badge-neutral count-badge">6 filas</span></summary><div class="details-body"><div class="table-wrap"><table class="data-table" id="tbl-1-4-1" data-total-rows="6"><thead><tr><th data-col="0" data-type="text" aria-sort="none" tabindex="0" role="columnheader"><span class="th-label">Interfaz</span><span class="sort-ind" aria-hidden="true"></span></th><th data-col="1" data-type="text" aria-sort="none" tabindex="0" role="columnheader"><span class="th-label">DireccionIP</span><span class="sort-ind" aria-hidden="true"></span></th><th data-col="2" data-type="text" aria-sort="none" tabindex="0" role="columnheader"><span class="th-label">Prefijo</span><span class="sort-ind" aria-hidden="true"></span></th><th data-col="3" data-type="text" aria-sort="none" tabindex="0" role="columnheader"><span class="th-label">Broadcast</span><span class="sort-ind" aria-hidden="true"></span></th><th data-col="4" data-type="text" aria-sort="none" tabindex="0" role="columnheader"><span class="th-label">Scope</span><span class="sort-ind" aria-hidden="true"></span></th></tr></thead><tbody><tr><td>lo</td><td>127.0.0.1</td><td>8</td><td>(sin broadcast)</td><td>host</td></tr><tr><td>enp0s31f6</td><td>192.168.x.x</td><td>24</td><td>192.168.x.x</td><td>global</td></tr><tr><td>wlp1s0</td><td>192.168.x.x</td><td>24</td><td>192.168.x.x</td><td>global</td></tr><tr><td>ztt6jr67sw</td><td>192.168.x.x</td><td>24</td><td>192.168.x.x</td><td>global</td></tr><tr><td>docker0</td><td>172.17.x.x</td><td>16</td><td>172.17.x.x</td><td>global</td></tr><tr><td>br-d6d52ab064f7</td><td>192.168.x.x</td><td>24</td><td>192.168.x.x</td><td>global</td></tr></tbody></table></div></div></details></section><section class="card" id="sec-1-4-2"><h2>1.4.2 &mdash; Tabla de Rutas</h2><p class="section-note">Rutas IPv4 configuradas: destino, gateway (vacio si la ruta es directa, sin salto intermedio), interfaz de salida, direccion origen y metrica.</p><details class="subsection-details" open><summary>Tabla de Rutas <span class="badge badge-neutral count-badge">7 filas</span></summary><div class="details-body"><div class="table-wrap"><table class="data-table" id="tbl-1-4-2" data-total-rows="7"><thead><tr><th data-col="0" data-type="text" aria-sort="none" tabindex="0" role="columnheader"><span class="th-label">Destino</span><span class="sort-ind" aria-hidden="true"></span></th><th data-col="1" data-type="text" aria-sort="none" tabindex="0" role="columnheader"><span class="th-label">Gateway</span><span class="sort-ind" aria-hidden="true"></span></th><th data-col="2" data-type="text" aria-sort="none" tabindex="0" role="columnheader"><span class="th-label">Interfaz</span><span class="sort-ind" aria-hidden="true"></span></th><th data-col="3" data-type="text" aria-sort="none" tabindex="0" role="columnheader"><span class="th-label">Origen</span><span class="sort-ind" aria-hidden="true"></span></th><th data-col="4" data-type="text" aria-sort="none" tabindex="0" role="columnheader"><span class="th-label">Metrica</span><span class="sort-ind" aria-hidden="true"></span></th></tr></thead><tbody><tr><td>default</td><td>192.168.x.x</td><td>enp0s31f6</td><td>N/D</td><td>100</td></tr><tr><td>default</td><td>192.168.x.x</td><td>wlp1s0</td><td>192.168.x.x</td><td>600</td></tr><tr><td>172.17.x.x/16</td><td>(directa)</td><td>docker0</td><td>172.17.x.x</td><td>N/D</td></tr><tr><td>192.168.x.x/24</td><td>(directa)</td><td>enp0s31f6</td><td>192.168.x.x</td><td>100</td></tr><tr><td>192.168.x.x/24</td><td>(directa)</td><td>wlp1s0</td><td>192.168.x.x</td><td>600</td></tr><tr><td>192.168.x.x/24</td><td>(directa)</td><td>ztt6jr67sw</td><td>192.168.x.x</td><td>N/D</td></tr><tr><td>192.168.x.x/24</td><td>(directa)</td><td>br-d6d52ab064f7</td><td>192.168.x.x</td><td>N/D</td></tr></tbody></table></div></div></details></section><section class="card" id="sec-1-4-3"><h2>1.4.3 &mdash; Puertos en Escucha</h2><p class="section-note">Sockets TCP/UDP en escucha, con direccion/puerto local y el proceso dueno. El proceso solo se puede identificar corriendo como root; sin privilegios, esa columna queda marcada como no determinada.</p><details class="subsection-details" open><summary>Puertos en Escucha <span class="badge badge-neutral count-badge">75 filas</span></summary><div class="details-body"><div class="table-wrap"><table class="data-table" id="tbl-1-4-3" data-total-rows="75"><thead><tr><th data-col="0" data-type="text" aria-sort="none" tabindex="0" role="columnheader"><span class="th-label">Protocolo</span><span class="sort-ind" aria-hidden="true"></span></th><th data-col="1" data-type="text" aria-sort="none" tabindex="0" role="columnheader"><span class="th-label">DireccionLocal</span><span class="sort-ind" aria-hidden="true"></span></th><th data-col="2" data-type="text" aria-sort="none" tabindex="0" role="columnheader"><span class="th-label">Puerto</span><span class="sort-ind" aria-hidden="true"></span></th><th data-col="3" data-type="text" aria-sort="none" tabindex="0" role="columnheader"><span class="th-label">Proceso</span><span class="sort-ind" aria-hidden="true"></span></th></tr></thead><tbody><tr><td>udp</td><td>192.168.x.x</td><td>3702</td><td>users:((&quot;python3&quot;,pid=55979,fd=22))</td></tr><tr><td>udp</td><td>239.255.x.x</td><td>3702</td><td>users:((&quot;python3&quot;,pid=55979,fd=20))</td></tr><tr><td>udp</td><td>172.17.x.x</td><td>3702</td><td>users:((&quot;python3&quot;,pid=55979,fd=19))</td></tr><tr><td>udp</td><td>239.255.x.x</td><td>3702</td><td>users:((&quot;python3&quot;,pid=55979,fd=17))</td></tr><tr><td>udp</td><td>192.168.x.x</td><td>3702</td><td>users:((&quot;python3&quot;,pid=55979,fd=16))</td></tr><tr><td>udp</td><td>239.255.x.x</td><td>3702</td><td>users:((&quot;python3&quot;,pid=55979,fd=14))</td></tr><tr><td>udp</td><td>192.168.x.x</td><td>3702</td><td>users:((&quot;python3&quot;,pid=55979,fd=13))</td></tr><tr><td>udp</td><td>239.255.x.x</td><td>3702</td><td>users:((&quot;python3&quot;,pid=55979,fd=11))</td></tr><tr><td>udp</td><td>192.168.x.x</td><td>3702</td><td>users:((&quot;python3&quot;,pid=55979,fd=10))</td></tr><tr><td>udp</td><td>239.255.x.x</td><td>3702</td><td>users:((&quot;python3&quot;,pid=55979,fd=8))</td></tr><tr><td>udp</td><td>0.0.0.0</td><td>45028</td><td>users:((&quot;python3&quot;,pid=55979,fd=15))</td></tr><tr><td>udp</td><td>0.0.0.0</td><td>36876</td><td>users:((&quot;python3&quot;,pid=55979,fd=12))</td></tr><tr><td>udp</td><td>0.0.0.0</td><td>5353</td><td>users:((&quot;adb&quot;,pid=56147,fd=22))</td></tr><tr><td>udp</td><td>0.0.0.0</td><td>5353</td><td>users:((&quot;adb&quot;,pid=56147,fd=21))</td></tr><tr><td>udp</td><td>0.0.0.0</td><td>5353</td><td>users:((&quot;adb&quot;,pid=56147,fd=19))</td></tr><tr><td>udp</td><td>0.0.0.0</td><td>5353</td><td>users:((&quot;adb&quot;,pid=56147,fd=17))</td></tr><tr><td>udp</td><td>0.0.0.0</td><td>5353</td><td>users:((&quot;adb&quot;,pid=56147,fd=15))</td></tr><tr><td>udp</td><td>0.0.0.0</td><td>5353</td><td>users:((&quot;avahi-daemon&quot;,pid=1311,fd=12))</td></tr><tr><td>udp</td><td>192.168.x.x%wlp1s0</td><td>47132</td><td>users:((&quot;zerotier-one&quot;,pid=2570,fd=18))</td></tr><tr><td>udp</td><td>192.168.x.x%br-d6d52ab064f7</td><td>47132</td><td>users:((&quot;zerotier-one&quot;,pid=2570,fd=23))</td></tr><tr><td>udp</td><td>172.17.x.x%docker0</td><td>47132</td><td>users:((&quot;zerotier-one&quot;,pid=2570,fd=22))</td></tr><tr><td>udp</td><td>192.168.x.x%enp0s31f6</td><td>47132</td><td>users:((&quot;zerotier-one&quot;,pid=2570,fd=19))</td></tr><tr><td>udp</td><td>192.168.x.x%wlp1s0</td><td>47495</td><td>users:((&quot;zerotier-one&quot;,pid=2570,fd=20))</td></tr><tr><td>udp</td><td>192.168.x.x%br-d6d52ab064f7</td><td>47495</td><td>users:((&quot;zerotier-one&quot;,pid=2570,fd=25))</td></tr><tr><td>udp</td><td>172.17.x.x%docker0</td><td>47495</td><td>users:((&quot;zerotier-one&quot;,pid=2570,fd=24))</td></tr><tr><td>udp</td><td>192.168.x.x%enp0s31f6</td><td>47495</td><td>users:((&quot;zerotier-one&quot;,pid=2570,fd=21))</td></tr><tr><td>udp</td><td>0.0.0.0</td><td>47862</td><td>users:((&quot;python3&quot;,pid=55979,fd=21))</td></tr><tr><td>udp</td><td>0.0.0.0</td><td>57081</td><td>users:((&quot;python3&quot;,pid=55979,fd=9))</td></tr><tr><td>udp</td><td>127.0.x.x</td><td>53</td><td>users:((&quot;systemd-resolve&quot;,pid=300,fd=18))</td></tr><tr><td>udp</td><td>127.0.x.x%lo</td><td>53</td><td>users:((&quot;systemd-resolve&quot;,pid=300,fd=16))</td></tr><tr><td>udp</td><td>0.0.0.0</td><td>50856</td><td>users:((&quot;python3&quot;,pid=55979,fd=18))</td></tr><tr><td>udp</td><td>192.168.x.x%wlp1s0</td><td>9993</td><td>users:((&quot;zerotier-one&quot;,pid=2570,fd=15))</td></tr><tr><td>udp</td><td>192.168.x.x%br-d6d52ab064f7</td><td>9993</td><td>users:((&quot;zerotier-one&quot;,pid=2570,fd=16))</td></tr><tr><td>udp</td><td>172.17.x.x%docker0</td><td>9993</td><td>users:((&quot;zerotier-one&quot;,pid=2570,fd=6))</td></tr><tr><td>udp</td><td>192.168.x.x%enp0s31f6</td><td>9993</td><td>users:((&quot;zerotier-one&quot;,pid=2570,fd=17))</td></tr><tr><td>udp</td><td>[fe80::x:x%ztt6jr67sw</td><td>3702</td><td>users:((&quot;python3&quot;,pid=55979,fd=31))</td></tr><tr><td>udp</td><td>[ff02::x:x%ztt6jr67sw</td><td>3702</td><td>users:((&quot;python3&quot;,pid=55979,fd=29))</td></tr><tr><td>udp</td><td>[fe80::x:x%wlp1s0</td><td>3702</td><td>users:((&quot;python3&quot;,pid=55979,fd=28))</td></tr><tr><td>udp</td><td>[ff02::x:x%wlp1s0</td><td>3702</td><td>users:((&quot;python3&quot;,pid=55979,fd=26))</td></tr><tr><td>udp</td><td>[fe80::x:x%enp0s31f6</td><td>3702</td><td>users:((&quot;python3&quot;,pid=55979,fd=25))</td></tr><tr><td>udp</td><td>[ff02::x:x%enp0s31f6</td><td>3702</td><td>users:((&quot;python3&quot;,pid=55979,fd=23))</td></tr><tr><td>udp</td><td>*</td><td>5353</td><td>users:((&quot;adb&quot;,pid=56147,fd=20))</td></tr><tr><td>udp</td><td>*</td><td>5353</td><td>users:((&quot;adb&quot;,pid=56147,fd=18))</td></tr><tr><td>udp</td><td>*</td><td>5353</td><td>users:((&quot;adb&quot;,pid=56147,fd=16))</td></tr><tr><td>udp</td><td>[::x:x</td><td>5353</td><td>users:((&quot;avahi-daemon&quot;,pid=1311,fd=13))</td></tr><tr><td>udp</td><td>[2800:300:x:x%enp0s31f6</td><td>47132</td><td>users:((&quot;zerotier-one&quot;,pid=2570,fd=30))</td></tr><tr><td>udp</td><td>[2800:300:x:x%wlp1s0</td><td>47132</td><td>users:((&quot;zerotier-one&quot;,pid=2570,fd=31))</td></tr><tr><td>udp</td><td>[2800:300:x:x%enp0s31f6</td><td>47132</td><td>users:((&quot;zerotier-one&quot;,pid=2570,fd=33))</td></tr><tr><td>udp</td><td>[2800:300:x:x%wlp1s0</td><td>47132</td><td>users:((&quot;zerotier-one&quot;,pid=2570,fd=32))</td></tr><tr><td>udp</td><td>[2800:300:x:x%enp0s31f6</td><td>47495</td><td>users:((&quot;zerotier-one&quot;,pid=2570,fd=34))</td></tr><tr><td>udp</td><td>[2800:300:x:x%wlp1s0</td><td>47495</td><td>users:((&quot;zerotier-one&quot;,pid=2570,fd=35))</td></tr><tr><td>udp</td><td>[2800:300:x:x%enp0s31f6</td><td>47495</td><td>users:((&quot;zerotier-one&quot;,pid=2570,fd=37))</td></tr><tr><td>udp</td><td>[2800:300:x:x%wlp1s0</td><td>47495</td><td>users:((&quot;zerotier-one&quot;,pid=2570,fd=36))</td></tr><tr><td>udp</td><td>[fe80::x:x%wlp1s0</td><td>546</td><td>users:((&quot;NetworkManager&quot;,pid=1538,fd=29))</td></tr><tr><td>udp</td><td>[fe80::x:x%enp0s31f6</td><td>546</td><td>users:((&quot;NetworkManager&quot;,pid=1538,fd=26))</td></tr><tr><td>udp</td><td>[2800:300:x:x%enp0s31f6</td><td>9993</td><td>users:((&quot;zerotier-one&quot;,pid=2570,fd=26))</td></tr><tr><td>udp</td><td>[2800:300:x:x%wlp1s0</td><td>9993</td><td>users:((&quot;zerotier-one&quot;,pid=2570,fd=27))</td></tr><tr><td>udp</td><td>[2800:300:x:x%enp0s31f6</td><td>9993</td><td>users:((&quot;zerotier-one&quot;,pid=2570,fd=29))</td></tr><tr><td>udp</td><td>[2800:300:x:x%wlp1s0</td><td>9993</td><td>users:((&quot;zerotier-one&quot;,pid=2570,fd=28))</td></tr><tr><td>udp</td><td>*</td><td>42824</td><td>users:((&quot;python3&quot;,pid=55979,fd=30))</td></tr><tr><td>udp</td><td>*</td><td>59917</td><td>users:((&quot;python3&quot;,pid=55979,fd=27))</td></tr><tr><td>udp</td><td>*</td><td>44344</td><td>users:((&quot;python3&quot;,pid=55979,fd=24))</td></tr><tr><td>tcp</td><td>0.0.0.0</td><td>9993</td><td>users:((&quot;zerotier-one&quot;,pid=2570,fd=7))</td></tr><tr><td>tcp</td><td>127.0.0.1</td><td>11434</td><td>users:((&quot;ollama&quot;,pid=2564,fd=4))</td></tr><tr><td>tcp</td><td>0.0.0.0</td><td>22</td><td>users:((&quot;sshd&quot;,pid=286483,fd=3),(&quot;systemd&quot;,pid=1,fd=580))</td></tr><tr><td>tcp</td><td>127.0.0.1</td><td>18789</td><td>users:((&quot;node&quot;,pid=2004,fd=33))</td></tr><tr><td>tcp</td><td>127.0.0.1</td><td>631</td><td>users:((&quot;cupsd&quot;,pid=433511,fd=7))</td></tr><tr><td>tcp</td><td>127.0.x.x</td><td>53</td><td>users:((&quot;systemd-resolve&quot;,pid=300,fd=19))</td></tr><tr><td>tcp</td><td>127.0.0.1</td><td>5037</td><td>users:((&quot;adb&quot;,pid=56147,fd=12))</td></tr><tr><td>tcp</td><td>127.0.x.x%lo</td><td>53</td><td>users:((&quot;systemd-resolve&quot;,pid=300,fd=17))</td></tr><tr><td>tcp</td><td>*</td><td>9993</td><td>users:((&quot;zerotier-one&quot;,pid=2570,fd=8))</td></tr><tr><td>tcp</td><td>[::x:x</td><td>631</td><td>users:((&quot;cupsd&quot;,pid=433511,fd=6))</td></tr><tr><td>tcp</td><td>[::x:x</td><td>22</td><td>users:((&quot;sshd&quot;,pid=286483,fd=4),(&quot;systemd&quot;,pid=1,fd=581))</td></tr><tr><td>tcp</td><td>[::x:x</td><td>18789</td><td>users:((&quot;node&quot;,pid=2004,fd=34))</td></tr><tr><td>tcp</td><td>*</td><td>3389</td><td>users:((&quot;xrdp&quot;,pid=2569,fd=13))</td></tr></tbody></table></div></div></details></section><section class="card" id="sec-1-5-1"><h2>1.5.1 &mdash; Discos y Particiones (lsblk)</h2><p class="section-note">Dispositivos de bloque: discos fisicos, particiones, volumenes LVM/loop y sus puntos de montaje. Equivalente Linux de la seccion de Discos Locales de la version Windows.</p><details class="subsection-details" open><summary>Discos y Particiones (lsblk) <span class="badge badge-neutral count-badge">40 filas</span></summary><div class="details-body"><div class="table-wrap"><table class="data-table" id="tbl-1-5-1" data-total-rows="40"><thead><tr><th data-col="0" data-type="text" aria-sort="none" tabindex="0" role="columnheader"><span class="th-label">Nombre</span><span class="sort-ind" aria-hidden="true"></span></th><th data-col="1" data-type="text" aria-sort="none" tabindex="0" role="columnheader"><span class="th-label">Tamano</span><span class="sort-ind" aria-hidden="true"></span></th><th data-col="2" data-type="text" aria-sort="none" tabindex="0" role="columnheader"><span class="th-label">Tipo</span><span class="sort-ind" aria-hidden="true"></span></th><th data-col="3" data-type="text" aria-sort="none" tabindex="0" role="columnheader"><span class="th-label">SistemaArchivos</span><span class="sort-ind" aria-hidden="true"></span></th><th data-col="4" data-type="text" aria-sort="none" tabindex="0" role="columnheader"><span class="th-label">PuntoMontaje</span><span class="sort-ind" aria-hidden="true"></span></th></tr></thead><tbody><tr><td>loop0</td><td>4K</td><td>loop</td><td>squashfs</td><td>/snap/bare/5</td></tr><tr><td>loop1</td><td>74M</td><td>loop</td><td>squashfs</td><td>/snap/core22/2437</td></tr><tr><td>loop2</td><td>221.1M</td><td>loop</td><td>squashfs</td><td>/snap/thunderbird/1228</td></tr><tr><td>loop4</td><td>50.3M</td><td>loop</td><td>squashfs</td><td>/snap/snapd/27738</td></tr><tr><td>loop5</td><td>422.8M</td><td>loop</td><td>squashfs</td><td>/snap/zoom-client/279</td></tr><tr><td>loop6</td><td>66.8M</td><td>loop</td><td>squashfs</td><td>/snap/core24/1643</td></tr><tr><td>loop7</td><td>74M</td><td>loop</td><td>squashfs</td><td>/snap/core22/2411</td></tr><tr><td>loop8</td><td>50.1M</td><td>loop</td><td>squashfs</td><td>/snap/snapd/27710</td></tr><tr><td>loop9</td><td>20M</td><td>loop</td><td>squashfs</td><td>/snap/desktop-security-center/151</td></tr><tr><td>loop10</td><td>49.1M</td><td>loop</td><td>squashfs</td><td>/snap/cups/1229</td></tr><tr><td>loop11</td><td>66.8M</td><td>loop</td><td>squashfs</td><td>/snap/core24/1587</td></tr><tr><td>loop12</td><td>261.1M</td><td>loop</td><td>squashfs</td><td>/snap/firefox/8803</td></tr><tr><td>loop13</td><td>47.9M</td><td>loop</td><td>squashfs</td><td>/snap/cups/1238</td></tr><tr><td>loop14</td><td>16.4M</td><td>loop</td><td>squashfs</td><td>/snap/firmware-updater/224</td></tr><tr><td>loop15</td><td>16.5M</td><td>loop</td><td>squashfs</td><td>/snap/firmware-updater/226</td></tr><tr><td>loop16</td><td>531.4M</td><td>loop</td><td>squashfs</td><td>/snap/gnome-42-2204/247</td></tr><tr><td>loop17</td><td>531.5M</td><td>loop</td><td>squashfs</td><td>/snap/gnome-42-2204/263</td></tr><tr><td>loop18</td><td>614.5M</td><td>loop</td><td>squashfs</td><td>/snap/gnome-46-2404/164</td></tr><tr><td>loop19</td><td>606.1M</td><td>loop</td><td>squashfs</td><td>/snap/gnome-46-2404/153</td></tr><tr><td>loop20</td><td>91.7M</td><td>loop</td><td>squashfs</td><td>/snap/gtk-common-themes/1535</td></tr><tr><td>loop21</td><td>395M</td><td>loop</td><td>squashfs</td><td>/snap/mesa-2404/1165</td></tr><tr><td>loop22</td><td>402M</td><td>loop</td><td>squashfs</td><td>/snap/mesa-2404/1839</td></tr><tr><td>loop23</td><td>15.7M</td><td>loop</td><td>squashfs</td><td>/snap/snap-store/1367</td></tr><tr><td>loop24</td><td>18.8M</td><td>loop</td><td>squashfs</td><td>/snap/prompting-client/222</td></tr><tr><td>loop25</td><td>11.8M</td><td>loop</td><td>squashfs</td><td>/snap/snap-store/1390</td></tr><tr><td>loop26</td><td>221.5M</td><td>loop</td><td>squashfs</td><td>/snap/thunderbird/1240</td></tr><tr><td>loop27</td><td>50.1M</td><td>loop</td><td>squashfs</td><td>(sin montar)</td></tr><tr><td>loop28</td><td>828K</td><td>loop</td><td>squashfs</td><td>/snap/snapd-desktop-integration/387</td></tr><tr><td>loop29</td><td>828K</td><td>loop</td><td>squashfs</td><td>/snap/snapd-desktop-integration/391</td></tr><tr><td>loop30</td><td>940K</td><td>loop</td><td>squashfs</td><td>/snap/speedtest/12</td></tr><tr><td>loop31</td><td>214.5M</td><td>loop</td><td>squashfs</td><td>/snap/brave/678</td></tr><tr><td>loop32</td><td>214.9M</td><td>loop</td><td>squashfs</td><td>/snap/brave/680</td></tr><tr><td>loop33</td><td>484.1M</td><td>loop</td><td>squashfs</td><td>/snap/zoom-client/275</td></tr><tr><td>loop34</td><td>260.8M</td><td>loop</td><td>squashfs</td><td>/snap/firefox/8819</td></tr><tr><td>loop35</td><td>193.4M</td><td>loop</td><td>squashfs</td><td>/snap/chromium/3507</td></tr><tr><td>loop36</td><td>179.3M</td><td>loop</td><td>squashfs</td><td>/snap/chromium/3520</td></tr><tr><td>sda</td><td>223.6G</td><td>disk</td><td>(sin formatear)</td><td>(sin montar)</td></tr><tr><td>sda1</td><td>1G</td><td>part</td><td>vfat</td><td>/boot/efi</td></tr><tr><td>sda2</td><td>222.5G</td><td>part</td><td>ext4</td><td>/</td></tr><tr><td>sdb</td><td>4M</td><td>disk</td><td>vfat</td><td>/run/media/demo/9479-E1FF</td></tr></tbody></table></div></div></details></section><section class="card" id="sec-1-5-2"><h2>1.5.2 &mdash; Cifrado de Disco (LUKS)</h2><p class="section-note">Volumenes cifrados con dm-crypt/LUKS detectados a partir de lsblk (Tipo=crypt). Equivalente Linux de BitLocker en la version Windows. Una tabla vacia significa que se evaluo el equipo y no se encontro ningun volumen cifrado, no que la deteccion fallo.</p><div class="empty-state"><span class="empty-icon" aria-hidden="true">&#8709;</span><p>Sin datos disponibles o rol no instalado.</p></div></section><section class="card" id="sec-1-10-1"><h2>1.10.1 &mdash; Tareas Programadas (cron)</h2><p class="section-note">Entradas de crontab (de todos los usuarios si el script corrio como root; solo del usuario actual si no) y nombres de archivo en /etc/cron.d. Comentarios y lineas vacias omitidos.</p><details class="subsection-details" open><summary>Tareas Programadas (cron) <span class="badge badge-neutral count-badge">3 filas</span></summary><div class="details-body"><div class="table-wrap"><table class="data-table" id="tbl-1-10-1" data-total-rows="3"><thead><tr><th data-col="0" data-type="text" aria-sort="none" tabindex="0" role="columnheader"><span class="th-label">Origen</span><span class="sort-ind" aria-hidden="true"></span></th><th data-col="1" data-type="text" aria-sort="none" tabindex="0" role="columnheader"><span class="th-label">Detalle</span><span class="sort-ind" aria-hidden="true"></span></th></tr></thead><tbody><tr><td>/etc/cron.d</td><td>anacron</td></tr><tr><td>/etc/cron.d</td><td>.placeholder</td></tr><tr><td>/etc/cron.d</td><td>e2scrub_all</td></tr></tbody></table></div></div></details></section><section class="card" id="sec-1-10-2"><h2>1.10.2 &mdash; Timers de systemd</h2><p class="section-note">Temporizadores de systemd (equivalente moderno de cron para unidades systemd gestionadas) y el servicio que disparan.</p><details class="subsection-details" open><summary>Timers de systemd <span class="badge badge-neutral count-badge">19 filas</span></summary><div class="details-body"><div class="table-wrap"><table class="data-table" id="tbl-1-10-2" data-total-rows="19"><thead><tr><th data-col="0" data-type="text" aria-sort="none" tabindex="0" role="columnheader"><span class="th-label">Timer</span><span class="sort-ind" aria-hidden="true"></span></th><th data-col="1" data-type="text" aria-sort="none" tabindex="0" role="columnheader"><span class="th-label">Servicio</span><span class="sort-ind" aria-hidden="true"></span></th></tr></thead><tbody><tr><td>sysstat-collect.timer</td><td>sysstat-collect.service</td></tr><tr><td>fwupd-refresh.timer</td><td>fwupd-refresh.service</td></tr><tr><td>anacron.timer</td><td>anacron.service</td></tr><tr><td>update-notifier-download.timer</td><td>update-notifier-download.service</td></tr><tr><td>systemd-tmpfiles-clean.timer</td><td>systemd-tmpfiles-clean.service</td></tr><tr><td>motd-news.timer</td><td>motd-news.service</td></tr><tr><td>dpkg-db-backup.timer</td><td>dpkg-db-backup.service</td></tr><tr><td>sysstat-rotate.timer</td><td>sysstat-rotate.service</td></tr><tr><td>sysstat-summary.timer</td><td>sysstat-summary.service</td></tr><tr><td>logrotate.timer</td><td>logrotate.service</td></tr><tr><td>e2scrub_all.timer</td><td>e2scrub_all.service</td></tr><tr><td>apt-daily.timer</td><td>apt-daily.service</td></tr><tr><td>man-db.timer</td><td>man-db.service</td></tr><tr><td>apt-daily-upgrade.timer</td><td>apt-daily-upgrade.service</td></tr><tr><td>fstrim.timer</td><td>fstrim.service</td></tr><tr><td>update-notifier-motd.timer</td><td>update-notifier-motd.service</td></tr><tr><td>apport-autoreport.timer</td><td>apport-autoreport.service</td></tr><tr><td>snapd.snap-repair.timer</td><td>snapd.snap-repair.service</td></tr><tr><td>ua-timer.timer</td><td>ua-timer.service</td></tr></tbody></table></div></div></details></section><section class="card" id="sec-1-11"><h2>1.11 &mdash; Hardening de Kernel (sysctl)</h2><p class="section-note">Subconjunto de parametros de kernel relevantes para seguridad de red y proteccion de memoria. net.ipv4.ip_forward=1 NO es necesariamente un problema: es normal y esperado en cualquier equipo con Docker, una VPN o enrutamiento intencional, asi que esta tabla lo muestra pero el motor de hallazgos no opina sobre el, para no generar advertencias falsas en la mayoria de los servidores reales.</p><details class="subsection-details" open><summary>Hardening de Kernel (sysctl) <span class="badge badge-neutral count-badge">5 filas</span></summary><div class="details-body"><div class="table-wrap"><table class="data-table" id="tbl-1-11" data-total-rows="5"><thead><tr><th data-col="0" data-type="text" aria-sort="none" tabindex="0" role="columnheader"><span class="th-label">Parametro</span><span class="sort-ind" aria-hidden="true"></span></th><th data-col="1" data-type="text" aria-sort="none" tabindex="0" role="columnheader"><span class="th-label">Valor</span><span class="sort-ind" aria-hidden="true"></span></th></tr></thead><tbody><tr><td>net.ipv4.ip_forward</td><td>1</td></tr><tr><td>net.ipv4.conf.all.rp_filter</td><td>2</td></tr><tr><td>net.ipv4.icmp_echo_ignore_broadcasts</td><td>1</td></tr><tr><td>kernel.randomize_va_space</td><td>2</td></tr><tr><td>net.ipv4.tcp_syncookies</td><td>1</td></tr></tbody></table></div></div></details></section><section class="card" id="sec-1-12"><h2>1.12 &mdash; Reinicio Pendiente</h2><p class="section-note">Indica si el equipo tiene una actualizacion de kernel u otro componente que requiere reinicio para aplicarse por completo. En Debian/Ubuntu se basa en /var/run/reboot-required; en RHEL/Fedora, en &#39;needs-restarting -r&#39; si esta disponible (paquete dnf-utils/yum-utils).</p><details class="subsection-details" open><summary>Reinicio Pendiente <span class="badge badge-neutral count-badge">1 filas</span></summary><div class="details-body"><div class="table-wrap"><table class="data-table" id="tbl-1-12" data-total-rows="1"><thead><tr><th data-col="0" data-type="text" aria-sort="none" tabindex="0" role="columnheader"><span class="th-label">ReinicioPendiente</span><span class="sort-ind" aria-hidden="true"></span></th><th data-col="1" data-type="text" aria-sort="none" tabindex="0" role="columnheader"><span class="th-label">Motivo</span><span class="sort-ind" aria-hidden="true"></span></th></tr></thead><tbody><tr><td>Si</td><td>*** System restart required ***</td></tr></tbody></table></div></div></details></section><section class="card" id="sec-1-13"><h2>1.13 &mdash; Certificados TLS Instalados</h2><p class="section-note">Certificados TLS propios del equipo (no los bundles de CAs de terceros) en las rutas habituales, con su Common Name y dias para expirar.</p><details class="subsection-details" open><summary>Certificados TLS Instalados <span class="badge badge-neutral count-badge">1 filas</span></summary><div class="details-body"><div class="table-wrap"><table class="data-table" id="tbl-1-13" data-total-rows="1"><thead><tr><th data-col="0" data-type="text" aria-sort="none" tabindex="0" role="columnheader"><span class="th-label">Archivo</span><span class="sort-ind" aria-hidden="true"></span></th><th data-col="1" data-type="text" aria-sort="none" tabindex="0" role="columnheader"><span class="th-label">CN</span><span class="sort-ind" aria-hidden="true"></span></th><th data-col="2" data-type="text" aria-sort="none" tabindex="0" role="columnheader"><span class="th-label">FechaExpiracion</span><span class="sort-ind" aria-hidden="true"></span></th><th data-col="3" data-type="text" aria-sort="none" tabindex="0" role="columnheader"><span class="th-label">DiasParaExpirar</span><span class="sort-ind" aria-hidden="true"></span></th></tr></thead><tbody><tr><td>/etc/ssl/certs/ssl-cert-snakeoil.pem</td><td>SRV-DEMO-01</td><td>Feb 21 05:03:53 2036 GMT</td><td>3448</td></tr></tbody></table></div></div></details></section><section class="card" id="sec-1-14"><h2>1.14 &mdash; Firewall</h2><p class="section-note">Implementacion de firewall detectada (firewalld/ufw/nftables/iptables) y sus reglas si el equipo corrio como root. Sin privilegios de root, solo se puede determinar si el servicio esta activo, no el contenido de las reglas.</p><details class="subsection-details" open><summary>Firewall <span class="badge badge-neutral count-badge">3 filas</span></summary><div class="details-body"><div class="table-wrap"><table class="data-table" id="tbl-1-14" data-total-rows="3"><thead><tr><th data-col="0" data-type="text" aria-sort="none" tabindex="0" role="columnheader"><span class="th-label">Campo</span><span class="sort-ind" aria-hidden="true"></span></th><th data-col="1" data-type="text" aria-sort="none" tabindex="0" role="columnheader"><span class="th-label">Valor</span><span class="sort-ind" aria-hidden="true"></span></th></tr></thead><tbody><tr><td>ImplementacionDetectada</td><td>ufw</td></tr><tr><td>ServicioFirewalldActivo</td><td>inactive</td></tr><tr><td>Regla</td><td>Status: inactive</td></tr></tbody></table></div></div></details></section><section class="card" id="sec-1-15"><h2>1.15 &mdash; Roles de Servidor (nginx / Apache / Samba / NFS)</h2><p class="section-note">Deteccion de roles de servidor comunes: servidor web (nginx/Apache), archivos (Samba/NFS).</p><div class="msg"><span class="msg-icon" aria-hidden="true">&#8505;</span><p>No se detecto ninguno de estos roles instalado en este equipo.</p></div></section><section class="card" id="sec-1-16"><h2>1.16 &mdash; Hardware del Host</h2><p class="section-note">Fabricante, modelo, tipo de chasis, CPU (nucleos fisicos y logicos) y memoria, leidos de /proc, /sys y lscpu -- ninguno requiere privilegios de root. Excepcion: el numero de serie casi siempre esta protegido por el kernel y solo se completa si el script corrio como root con dmidecode instalado.</p><details class="subsection-details" open><summary>Hardware del Host <span class="badge badge-neutral count-badge">1 filas</span></summary><div class="details-body"><div class="table-wrap"><table class="data-table" id="tbl-1-16" data-total-rows="1"><thead><tr><th data-col="0" data-type="text" aria-sort="none" tabindex="0" role="columnheader"><span class="th-label">Hostname</span><span class="sort-ind" aria-hidden="true"></span></th><th data-col="1" data-type="text" aria-sort="none" tabindex="0" role="columnheader"><span class="th-label">Fabricante</span><span class="sort-ind" aria-hidden="true"></span></th><th data-col="2" data-type="text" aria-sort="none" tabindex="0" role="columnheader"><span class="th-label">Modelo</span><span class="sort-ind" aria-hidden="true"></span></th><th data-col="3" data-type="text" aria-sort="none" tabindex="0" role="columnheader"><span class="th-label">TipoSistema</span><span class="sort-ind" aria-hidden="true"></span></th><th data-col="4" data-type="text" aria-sort="none" tabindex="0" role="columnheader"><span class="th-label">MaquinaVirtual</span><span class="sort-ind" aria-hidden="true"></span></th><th data-col="5" data-type="text" aria-sort="none" tabindex="0" role="columnheader"><span class="th-label">CPU</span><span class="sort-ind" aria-hidden="true"></span></th><th data-col="6" data-type="text" aria-sort="none" tabindex="0" role="columnheader"><span class="th-label">NucleosFisicos</span><span class="sort-ind" aria-hidden="true"></span></th><th data-col="7" data-type="text" aria-sort="none" tabindex="0" role="columnheader"><span class="th-label">NucleosLogicos</span><span class="sort-ind" aria-hidden="true"></span></th><th data-col="8" data-type="text" aria-sort="none" tabindex="0" role="columnheader"><span class="th-label">MemoriaTotalGB</span><span class="sort-ind" aria-hidden="true"></span></th><th data-col="9" data-type="text" aria-sort="none" tabindex="0" role="columnheader"><span class="th-label">NumeroSerie</span><span class="sort-ind" aria-hidden="true"></span></th></tr></thead><tbody><tr><td>SRV-DEMO-01</td><td>Dell Inc.</td><td>Latitude 5480</td><td>Notebook</td><td>No</td><td>Intel(R) Core(TM) i5-7440HQ CPU @ 2.80GHz</td><td>4</td><td>4</td><td>15.0</td><td>JR****</td></tr></tbody></table></div></div></details></section><section class="card" id="sec-1-17-1"><h2>1.17.1 &mdash; Errores Recientes del Journal</h2><p class="section-note">Hasta 100 entradas de nivel error o superior de los ultimos 7 dias, mas recientes primero. No se separa por unidad ni se cuenta por ID como en la version Windows (esa capa de agrupacion queda pendiente); cada fila es una linea cruda de journalctl.</p><details class="subsection-details" open><summary>Errores Recientes del Journal <span class="badge badge-neutral count-badge">10 filas</span></summary><div class="details-body"><div class="table-wrap"><table class="data-table" id="tbl-1-17-1" data-total-rows="10"><thead><tr><th data-col="0" data-type="text" aria-sort="none" tabindex="0" role="columnheader"><span class="th-label">FechaHoraUnidad</span><span class="sort-ind" aria-hidden="true"></span></th></tr></thead><tbody><tr><td>2026-09-07T00:13:50-03:00 SRV-DEMO-01 systemd[1]: Failed to start logrotate.service - Rotate log files.</td></tr><tr><td>2026-09-08T00:29:52-03:00 SRV-DEMO-01 systemd[1]: Failed to start logrotate.service - Rotate log files.</td></tr><tr><td>2026-09-09T00:22:27-03:00 SRV-DEMO-01 systemd[1]: Failed to start logrotate.service - Rotate log files.</td></tr><tr><td>2026-09-10T00:30:28-03:00 SRV-DEMO-01 systemd[1]: Failed to start logrotate.service - Rotate log files.</td></tr><tr><td>2026-09-11T00:07:53-03:00 SRV-DEMO-01 systemd[1]: Failed to start logrotate.service - Rotate log files.</td></tr><tr><td>2026-09-11T20:00:10-03:00 SRV-DEMO-01 kernel: /dev/sdb: Can&#39;t open blockdev</td></tr><tr><td>2026-09-11T20:00:16-03:00 SRV-DEMO-01 kernel: usb 1-1: device descriptor read/64, error -71</td></tr><tr><td>2026-09-11T20:00:16-03:00 SRV-DEMO-01 kernel: usb 1-1: device descriptor read/64, error -71</td></tr><tr><td>2026-09-11T20:02:36-03:00 SRV-DEMO-01 kernel: /dev/sdb: Can&#39;t open blockdev</td></tr><tr><td>2026-09-12T00:21:21-03:00 SRV-DEMO-01 systemd[1]: Failed to start logrotate.service - Rotate log files.</td></tr></tbody></table></div></div></details></section><section class="card" id="sec-1-17-2"><h2>1.17.2 &mdash; Intentos de Login Fallidos</h2><p class="section-note">Ultimos intentos de inicio de sesion fallidos (lastb, lee /var/log/btmp).</p><div class="msg"><span class="msg-icon" aria-hidden="true">&#8505;</span><p>No se pudo leer el registro de logins fallidos: requiere privilegios de root, o el archivo /var/log/btmp no existe en este equipo.</p></div></section><section class="card" id="sec-1-8-4"><h2>1.8.4 &mdash; Politica de Auditoria (auditd)</h2><p class="section-note">Estado del subsistema de auditoria del kernel (auditd): si el servicio esta activo y cuantas reglas tiene cargadas. El contenido de las reglas requiere privilegios de root para leerse.</p><details class="subsection-details" open><summary>Politica de Auditoria (auditd) <span class="badge badge-neutral count-badge">2 filas</span></summary><div class="details-body"><div class="table-wrap"><table class="data-table" id="tbl-1-8-4" data-total-rows="2"><thead><tr><th data-col="0" data-type="text" aria-sort="none" tabindex="0" role="columnheader"><span class="th-label">Campo</span><span class="sort-ind" aria-hidden="true"></span></th><th data-col="1" data-type="text" aria-sort="none" tabindex="0" role="columnheader"><span class="th-label">Valor</span><span class="sort-ind" aria-hidden="true"></span></th></tr></thead><tbody><tr><td>ServicioActivo</td><td>active</td></tr><tr><td>ReglasActivas</td><td>0</td></tr></tbody></table></div></div></details></section><section class="card" id="sec-1-8-5"><h2>1.8.5 &mdash; Binarios con SUID</h2><p class="section-note">Ejecutables con el bit SUID activo en /usr/bin, /usr/sbin, /bin y /sbin: corren con los privilegios del propietario del archivo (root en la mayoria de estos), no de quien los ejecuta. Una lista mas larga de lo normal aca merece revision manual.</p><details class="subsection-details" open><summary>Binarios con SUID <span class="badge badge-neutral count-badge">13 filas</span></summary><div class="details-body"><div class="table-wrap"><table class="data-table" id="tbl-1-8-5" data-total-rows="13"><thead><tr><th data-col="0" data-type="text" aria-sort="none" tabindex="0" role="columnheader"><span class="th-label">Ruta</span><span class="sort-ind" aria-hidden="true"></span></th><th data-col="1" data-type="text" aria-sort="none" tabindex="0" role="columnheader"><span class="th-label">Propietario</span><span class="sort-ind" aria-hidden="true"></span></th></tr></thead><tbody><tr><td>/usr/bin/fusermount3</td><td>r****</td></tr><tr><td>/usr/bin/passwd</td><td>r****</td></tr><tr><td>/usr/bin/newgrp</td><td>r****</td></tr><tr><td>/usr/bin/umount</td><td>r****</td></tr><tr><td>/usr/bin/sudo.ws</td><td>r****</td></tr><tr><td>/usr/bin/gpasswd</td><td>r****</td></tr><tr><td>/usr/bin/mount</td><td>r****</td></tr><tr><td>/usr/bin/ntfs-3g</td><td>r****</td></tr><tr><td>/usr/bin/su</td><td>r****</td></tr><tr><td>/usr/bin/pkexec</td><td>r****</td></tr><tr><td>/usr/bin/chsh</td><td>r****</td></tr><tr><td>/usr/bin/chfn</td><td>r****</td></tr><tr><td>/usr/sbin/pppd</td><td>r****</td></tr></tbody></table></div></div></details></section><section class="card" id="sec-1-8-6"><h2>1.8.6 &mdash; Capabilities de Linux Asignadas</h2><p class="section-note">Ejecutables con capabilities de Linux asignadas: un mecanismo para delegar un privilegio especifico (ej. abrir sockets crudos) a un binario sin darle todos los permisos de root via SUID. Es la alternativa moderna y mas acotada al SUID de la seccion anterior.</p><details class="subsection-details" open><summary>Capabilities de Linux Asignadas <span class="badge badge-neutral count-badge">2 filas</span></summary><div class="details-body"><div class="table-wrap"><table class="data-table" id="tbl-1-8-6" data-total-rows="2"><thead><tr><th data-col="0" data-type="text" aria-sort="none" tabindex="0" role="columnheader"><span class="th-label">Ruta</span><span class="sort-ind" aria-hidden="true"></span></th><th data-col="1" data-type="text" aria-sort="none" tabindex="0" role="columnheader"><span class="th-label">Capabilities</span><span class="sort-ind" aria-hidden="true"></span></th></tr></thead><tbody><tr><td>/usr/bin/mtr-packet</td><td>cap_net_raw=ep</td></tr><tr><td>/usr/bin/ping</td><td>cap_net_raw=ep</td></tr></tbody></table></div></div></details></section><section class="card" id="sec-1-8-7"><h2>1.8.7 &mdash; Usuarios Locales</h2><p class="section-note">Cuentas de usuario locales (UID 1000-59999) con su vigencia de contrasena individual, via chage. Complementa la politica global por defecto de la seccion 1.8.3: una cuenta puede tener valores propios distintos de esa politica.</p><details class="subsection-details" open><summary>Usuarios Locales <span class="badge badge-neutral count-badge">2 filas</span></summary><div class="details-body"><div class="table-wrap"><table class="data-table" id="tbl-1-8-7" data-total-rows="2"><thead><tr><th data-col="0" data-type="text" aria-sort="none" tabindex="0" role="columnheader"><span class="th-label">Usuario</span><span class="sort-ind" aria-hidden="true"></span></th><th data-col="1" data-type="text" aria-sort="none" tabindex="0" role="columnheader"><span class="th-label">UltimoCambioPassword</span><span class="sort-ind" aria-hidden="true"></span></th><th data-col="2" data-type="text" aria-sort="none" tabindex="0" role="columnheader"><span class="th-label">VenceEn</span><span class="sort-ind" aria-hidden="true"></span></th><th data-col="3" data-type="text" aria-sort="none" tabindex="0" role="columnheader"><span class="th-label">InactivaEn</span><span class="sort-ind" aria-hidden="true"></span></th></tr></thead><tbody><tr><td>k****</td><td>Feb 23, 2026</td><td>never</td><td>never</td></tr><tr><td>k****</td><td>Feb 23, 2026</td><td>never</td><td>never</td></tr></tbody></table></div></div></details></section><section class="card" id="sec-1-18"><h2>1.18 &mdash; Sincronizacion de Hora (NTP)</h2><p class="section-note">Estado de la sincronizacion horaria via timedatectl. Un reloj desincronizado invalida la correlacion de timestamps entre equipos durante una investigacion de incidente.</p><details class="subsection-details" open><summary>Sincronizacion de Hora (NTP) <span class="badge badge-neutral count-badge">1 filas</span></summary><div class="details-body"><div class="table-wrap"><table class="data-table" id="tbl-1-18" data-total-rows="1"><thead><tr><th data-col="0" data-type="text" aria-sort="none" tabindex="0" role="columnheader"><span class="th-label">ZonaHoraria</span><span class="sort-ind" aria-hidden="true"></span></th><th data-col="1" data-type="text" aria-sort="none" tabindex="0" role="columnheader"><span class="th-label">RelojSincronizado</span><span class="sort-ind" aria-hidden="true"></span></th><th data-col="2" data-type="text" aria-sort="none" tabindex="0" role="columnheader"><span class="th-label">ServicioNTP</span><span class="sort-ind" aria-hidden="true"></span></th></tr></thead><tbody><tr><td>America/Santiago (-03, -0300)</td><td>yes</td><td>active</td></tr></tbody></table></div></div></details></section><section class="card" id="sec-1-17-3"><h2>1.17.3 &mdash; Top 15 Procesos por Memoria</h2><p class="section-note">Los 15 procesos que mas memoria residente (%MEM) estan usando en el momento de la recoleccion. Una foto instantanea, no un promedio en el tiempo.</p><details class="subsection-details" open><summary>Top 15 Procesos por Memoria <span class="badge badge-neutral count-badge">15 filas</span></summary><div class="details-body"><div class="table-wrap"><table class="data-table" id="tbl-1-17-3" data-total-rows="15"><thead><tr><th data-col="0" data-type="text" aria-sort="none" tabindex="0" role="columnheader"><span class="th-label">Usuario</span><span class="sort-ind" aria-hidden="true"></span></th><th data-col="1" data-type="text" aria-sort="none" tabindex="0" role="columnheader"><span class="th-label">PID</span><span class="sort-ind" aria-hidden="true"></span></th><th data-col="2" data-type="text" aria-sort="none" tabindex="0" role="columnheader"><span class="th-label">CPUPct</span><span class="sort-ind" aria-hidden="true"></span></th><th data-col="3" data-type="text" aria-sort="none" tabindex="0" role="columnheader"><span class="th-label">MemPct</span><span class="sort-ind" aria-hidden="true"></span></th><th data-col="4" data-type="text" aria-sort="none" tabindex="0" role="columnheader"><span class="th-label">Comando</span><span class="sort-ind" aria-hidden="true"></span></th></tr></thead><tbody><tr><td>k****</td><td>2004</td><td>0.5</td><td>3.3</td><td>/usr/bin/node /home/****/.npm-global/lib/node_modules/openclaw/dist/index.js gateway --port 18789</td></tr><tr><td>k****</td><td>3970</td><td>0.4</td><td>3.2</td><td>/usr/bin/gnome-shell --mode=ubuntu</td></tr><tr><td>k****</td><td>55862</td><td>0.0</td><td>1.0</td><td>/usr/bin/nautilus --gapplication-service</td></tr><tr><td>k****</td><td>4979</td><td>0.0</td><td>0.9</td><td>/snap/snapd-desktop-integration/391/usr/bin/snapd-desktop-integration</td></tr><tr><td>k****</td><td>4592</td><td>0.0</td><td>0.6</td><td>/usr/libexec/mutter-x11-frames</td></tr><tr><td>k****</td><td>327156</td><td>0.0</td><td>0.5</td><td>/usr/bin/python3 /usr/share/apport/apport-gtk</td></tr><tr><td>r****</td><td>2563</td><td>0.0</td><td>0.5</td><td>/usr/bin/dockerd -H fd:// --containerd=/run/containerd/containerd.sock</td></tr><tr><td>k****</td><td>4734</td><td>0.0</td><td>0.5</td><td>gjs /usr/share/gnome-shell/extensions/ding@rastersoft.com/app/ding.js -E -P /usr/share/gnome-shell/extensions/ding@rastersoft.com/app</td></tr><tr><td>k****</td><td>4342</td><td>0.0</td><td>0.5</td><td>/usr/bin/Xwayland :0 -rootless -noreset -accessx -core -auth /run/user/1000/.mutter-Xwaylandauth.2YEIT3 -listenfd 4 -listenfd 5 -displayfd 6 -initfd 7 -byteswappedclients -enable-ei-portal</td></tr><tr><td>k****</td><td>4111</td><td>0.0</td><td>0.4</td><td>/usr/libexec/evolution-data-server/evolution-alarm-notify</td></tr><tr><td>k****</td><td>4611</td><td>0.0</td><td>0.4</td><td>/usr/libexec/ibus-x11</td></tr><tr><td>r****</td><td>6322</td><td>0.0</td><td>0.3</td><td>/usr/libexec/fwupd/fwupd</td></tr><tr><td>r****</td><td>1823</td><td>0.0</td><td>0.3</td><td>/usr/bin/containerd</td></tr><tr><td>k****</td><td>4033</td><td>0.0</td><td>0.2</td><td>/usr/libexec/evolution-source-registry</td></tr><tr><td>k****</td><td>4627</td><td>0.0</td><td>0.2</td><td>/usr/libexec/xdg-desktop-portal-gnome</td></tr></tbody></table></div></div></details></section><section class="card" id="sec-1-17-4"><h2>1.17.4 &mdash; Salud SMART de Discos Fisicos</h2><p class="section-note">Estado de salud SMART reportado por cada disco fisico.</p><div class="msg"><span class="msg-icon" aria-hidden="true">&#8505;</span><p>smartctl no esta instalado en este equipo (paquete smartmontools).</p></div></section><section class="card" id="sec-1-17-5"><h2>1.17.5 &mdash; Apagados Inesperados y Reinicios</h2><p class="section-note">Historial de arranques y apagados de los ultimos registros de /var/log/wtmp.</p><div class="msg"><span class="msg-icon" aria-hidden="true">&#8505;</span><p>El comando &#39;last&#39; no esta disponible en este equipo.</p></div></section><section class="card" id="sec-1-20-1"><h2>1.20.1 &mdash; Antivirus / EDR Detectado</h2><p class="section-note">Deteccion de agentes de antivirus o EDR conocidos, por presencia de binario o unidad systemd.</p><div class="msg"><span class="msg-icon" aria-hidden="true">&#8505;</span><p>No se detecto ningun agente de antivirus/EDR conocido en este equipo. Esto NO significa que el equipo este desprotegido: puede tener un agente no reconocido por esta lista, o depender de un control a nivel de red/perimetro.</p></div></section><section class="card" id="sec-1-20-2"><h2>1.20.2 &mdash; Agentes de Backup Detectados</h2><p class="section-note">Herramientas de backup conocidas (restic, borg, duplicity, Bacula, Veeam, Timeshift) detectadas por presencia de binario o unidad systemd. No verifica que corran periodicamente ni el estado de la ultima corrida: eso requeriria acceso al repositorio de backup, fuera de alcance de una deteccion local.</p><details class="subsection-details" open><summary>Agentes de Backup Detectados <span class="badge badge-neutral count-badge">1 filas</span></summary><div class="details-body"><div class="table-wrap"><table class="data-table" id="tbl-1-20-2" data-total-rows="1"><thead><tr><th data-col="0" data-type="text" aria-sort="none" tabindex="0" role="columnheader"><span class="th-label">HerramientaDetectada</span><span class="sort-ind" aria-hidden="true"></span></th></tr></thead><tbody><tr><td>restic</td></tr></tbody></table></div></div></details></section><footer class="report-footer"><p class="footer-meta">Generado por <strong>root</strong> desde <strong>SRV-DEMO-01</strong> el 2026-09-12 09:43:23 &middot; Script v0.1.0-slice (borrador de prueba de concepto)</p><details class="footer-details"><summary>Log de ejecucion (57 lineas)</summary><div class="details-body"><pre class="log-block">[09:43:09] [Info] cat-serverfullreport v0.1.0-slice iniciando (equipo local)...
+[09:43:09] [OK] Deteccion de capacidades (0.13s)
+[09:43:09] [OK] 1.1 Sistema Operativo y Kernel (0.12s)
+[09:43:09] [OK] 1.2.3 Actualizaciones Pendientes (0.01s)
+[09:43:09] [OK] 1.2 Servicios (systemd) (0.12s)
+[09:43:10] [OK] 1.3 Uso de Disco (0.12s)
+[09:43:10] [OK] 1.7 Servidor SSH (0.12s)
+[09:43:10] [OK] 1.11.2 TLS del Sistema (0.64s)
+[09:43:10] [OK] 1.8.1 Cuentas UID 0 (0.01s)
+[09:43:11] [OK] 1.8.2 Grupos Sudo (0.33s)
+[09:43:11] [OK] 1.8.3 Politica de Contrasenas (0.01s)
+[09:43:11] [OK] 1.9 SELinux / AppArmor (0.12s)
+[09:43:11] [OK] 1.4.1 Interfaces de Red (0.12s)
+[09:43:11] [OK] 1.4.2 Tabla de Rutas (0.12s)
+[09:43:11] [OK] 1.4.3 Puertos en Escucha (0.12s)
+[09:43:11] [OK] 1.5.1 Discos y Particiones (0.12s)
+[09:43:11] [OK] 1.5.2 Cifrado de Disco (0.01s)
+[09:43:12] [OK] 1.10.1 Cron (0.53s)
+[09:43:12] [OK] 1.10.2 Timers de systemd (0.12s)
+[09:43:13] [OK] 1.11 Hardening de Kernel (0.54s)
+[09:43:13] [OK] 1.12 Reinicio Pendiente (0.22s)
+[09:43:13] [OK] 1.13 Certificados TLS (0.54s)
+[09:43:14] [OK] 1.6 Paquetes Instalados (0.12s)
+[09:43:14] [OK] 1.14 Firewall (0.22s)
+[09:43:14] [OK] 1.15 Roles de Servidor (0.01s)
+[09:43:15] [OK] 1.16 Hardware (0.86s)
+[09:43:15] [OK] 1.17.1 Errores del Journal (0.12s)
+[09:43:15] [OK] 1.17.2 Logins Fallidos (0.01s)
+[09:43:15] [OK] 1.8.4 Politica de Auditoria (0.33s)
+[09:43:17] [OK] 1.8.5 Binarios SUID (1.50s)
+[09:43:17] [OK] 1.8.6 Capabilities (0.22s)
+[09:43:17] [OK] 1.8.7 Usuarios Locales (0.34s)
+[09:43:18] [OK] 1.18 NTP (0.23s)
+[09:43:18] [OK] 1.19.1 Interprete Python (0.32s)
+[09:43:18] [OK] 1.19.2 Paquetes pip (0.42s)
+[09:43:19] [OK] 1.19.3 Entornos Virtuales (0.55s)
+[09:43:19] [OK] 1.19.4 Repositorios Git (0.01s)
+[09:43:19] [OK] 1.19.5 Contenedores Docker (0.22s)
+[09:43:19] [OK] 1.17.3 Top Procesos (0.12s)
+[09:43:19] [OK] 1.17.4 Salud SMART (0.11s)
+[09:43:19] [OK] 1.17.5 Apagados Inesperados (0.11s)
+[09:43:20] [OK] 1.20.1 Antivirus/EDR (0.22s)
+[09:43:20] [OK] 1.20.2 Backups (0.43s)
+[09:43:20] [OK] Motor de hallazgos: Actualizaciones (0.01s)
+[09:43:21] [OK] Motor de hallazgos: Storage (0.43s)
+[09:43:21] [OK] Motor de hallazgos: UID 0 (0.01s)
+[09:43:21] [OK] Motor de hallazgos: SSH (0.02s)
+[09:43:21] [OK] Motor de hallazgos: Politica de contrasenas (0.01s)
+[09:43:21] [OK] Motor de hallazgos: SELinux/AppArmor (0.01s)
+[09:43:21] [OK] Motor de hallazgos: Puertos sensibles (0.01s)
+[09:43:21] [OK] Motor de hallazgos: Sysctl (0.01s)
+[09:43:21] [OK] Motor de hallazgos: Reinicio pendiente (0.01s)
+[09:43:21] [OK] Motor de hallazgos: Certificados (0.01s)
+[09:43:21] [OK] Motor de hallazgos: Firewall (0.01s)
+[09:43:21] [OK] Motor de hallazgos: Journal (0.01s)
+[09:43:21] [OK] Motor de hallazgos: Auditoria (0.01s)
+[09:43:21] [OK] Motor de hallazgos: NTP (0.01s)
+</pre></div></details></footer></main></div><script>(function(){
+  "use strict";
+
+  function safeRun(fn){ try { fn(); } catch (e) { /* el reporte sigue siendo legible */ } }
+
+  function prefersReducedMotion(){
+    try { return !!(window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches); }
+    catch (e) { return false; }
+  }
+
+  function scrollToId(id){
+    var el = document.getElementById(id);
+    if (!el) return;
+    if (el.tagName && el.tagName.toLowerCase() === "details") { el.open = true; }
+    if (el.querySelectorAll) {
+      var inner = el.querySelectorAll("details");
+      for (var i = 0; i < inner.length; i++) { inner[i].open = true; }
+    }
+    try {
+      el.scrollIntoView({ behavior: prefersReducedMotion() ? "auto" : "smooth", block: "start" });
+    } catch (e) {
+      el.scrollIntoView();
+    }
+  }
+
+  function initAnchorOpen(){
+    var anchors = document.querySelectorAll('a[href^="#"]');
+    for (var i = 0; i < anchors.length; i++) {
+      (function(a){
+        a.addEventListener("click", function(ev){
+          var id = a.getAttribute("href").slice(1);
+          if (!id) return;
+          var el = document.getElementById(id);
+          if (!el) return;
+          ev.preventDefault();
+          scrollToId(id);
+          history.replaceState ? history.replaceState(null, "", "#" + id) : (window.location.hash = id);
+        });
+      })(anchors[i]);
+    }
+  }
+
+  function initThemeToggle(){
+    var btn = document.getElementById("theme-toggle");
+    if (!btn) return;
+    btn.addEventListener("click", function(){
+      var current = "system";
+      try { current = localStorage.getItem("asbuilt-theme") || "system"; } catch (e) {}
+      var next = "dark";
+      if (current === "light") { next = "dark"; }
+      else if (current === "dark") { next = "system"; }
+      else { next = "light"; }
+
+      if (next === "system") { document.documentElement.removeAttribute("data-theme"); }
+      else { document.documentElement.setAttribute("data-theme", next); }
+
+      try { localStorage.setItem("asbuilt-theme", next); } catch (e) {}
+    });
+  }
+
+  function initPrintButton(){
+    var btn = document.getElementById("print-btn");
+    if (!btn) return;
+    btn.addEventListener("click", function(){ window.print(); });
+  }
+
+  function parseSortValue(cellText, type){
+    var t = (cellText || "").replace(/\s+/g, " ").trim();
+    if (type === "num") {
+      var cleaned = t.replace(/,/g, "");
+      var m = cleaned.match(/-?[0-9]+(\.[0-9]+)?/);
+      return m ? parseFloat(m[0]) : -Infinity;
+    }
+    if (type === "date") {
+      var iso = Date.parse(t);
+      if (!isNaN(iso)) { return iso; }
+      var m2 = t.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})/);
+      if (m2) { return new Date(parseInt(m2[3],10), parseInt(m2[2],10)-1, parseInt(m2[1],10)).getTime(); }
+      return -Infinity;
+    }
+    if (type === "bool") {
+      var tl = t.toLowerCase();
+      return (tl === "true" || tl === "si") ? 1 : 0;
+    }
+    return t.toLowerCase();
+  }
+
+  function sortTableBy(table, th, allThs){
+    var colIndex = parseInt(th.getAttribute("data-col"), 10);
+    var type = th.getAttribute("data-type") || "text";
+    var current = th.getAttribute("aria-sort");
+    var dir = "ascending";
+    if (current === "ascending") { dir = "descending"; }
+
+    for (var i = 0; i < allThs.length; i++) { allThs[i].setAttribute("aria-sort", "none"); }
+    th.setAttribute("aria-sort", dir);
+
+    var tbody = table.querySelector("tbody");
+    if (!tbody) return;
+    var rows = Array.prototype.slice.call(tbody.querySelectorAll("tr"));
+    var mult = dir === "ascending" ? 1 : -1;
+
+    rows.sort(function(a, b){
+      var ca = a.children[colIndex] ? a.children[colIndex].textContent : "";
+      var cb = b.children[colIndex] ? b.children[colIndex].textContent : "";
+      var va = parseSortValue(ca, type);
+      var vb = parseSortValue(cb, type);
+      if (va < vb) return -1 * mult;
+      if (va > vb) return 1 * mult;
+      return 0;
+    });
+
+    for (var j = 0; j < rows.length; j++) { tbody.appendChild(rows[j]); }
+  }
+
+  function initSortableTables(root){
+    var tables = root.querySelectorAll("table.data-table");
+    for (var i = 0; i < tables.length; i++) {
+      (function(table){
+        var ths = table.querySelectorAll("thead th[data-col]");
+        for (var k = 0; k < ths.length; k++) {
+          (function(th){
+            th.addEventListener("click", function(){ sortTableBy(table, th, ths); });
+            th.addEventListener("keydown", function(ev){
+              if (ev.key === "Enter" || ev.key === " ") { ev.preventDefault(); sortTableBy(table, th, ths); }
+            });
+          })(ths[k]);
+        }
+      })(tables[i]);
+    }
+  }
+
+  function initTableFilters(root){
+    var inputs = root.querySelectorAll(".table-filter-input");
+    for (var i = 0; i < inputs.length; i++) {
+      (function(inp){
+        inp.addEventListener("input", function(){
+          var targetId = inp.getAttribute("data-filter-for");
+          var table = document.getElementById(targetId);
+          if (!table) return;
+          var q = inp.value.trim().toLowerCase();
+          var rows = table.querySelectorAll("tbody tr");
+          var shown = 0;
+          for (var r = 0; r < rows.length; r++) {
+            var text = (rows[r].textContent || "").toLowerCase();
+            var match = q === "" || text.indexOf(q) !== -1;
+            rows[r].hidden = !match;
+            if (match) shown++;
+          }
+          var counter = document.querySelector('.table-filter-count[data-count-for="' + targetId + '"]');
+          if (counter) { counter.textContent = "mostrando " + shown + " de " + rows.length; }
+        });
+      })(inputs[i]);
+    }
+  }
+
+  function initFindingsFilter(root){
+    var bar = root.querySelector(".findings-filterbar");
+    if (!bar) return;
+    var buttons = bar.querySelectorAll(".chip-filter");
+    var table = document.getElementById("tbl-hallazgos");
+    for (var i = 0; i < buttons.length; i++) {
+      (function(btn){
+        btn.addEventListener("click", function(){
+          for (var b = 0; b < buttons.length; b++) {
+            buttons[b].classList.remove("active");
+            buttons[b].setAttribute("aria-pressed", "false");
+          }
+          btn.classList.add("active");
+          btn.setAttribute("aria-pressed", "true");
+          var sev = btn.getAttribute("data-sev");
+          if (!table) return;
+          var rows = table.querySelectorAll("tbody tr");
+          for (var r = 0; r < rows.length; r++) {
+            var rsev = rows[r].getAttribute("data-sev");
+            rows[r].hidden = (sev !== "ALL" && rsev !== sev);
+          }
+        });
+      })(buttons[i]);
+    }
+  }
+
+  function initTocFilter(){
+    var input = document.getElementById("toc-filter");
+    if (!input) return;
+    input.addEventListener("input", function(){
+      var q = input.value.trim().toLowerCase();
+      var items = document.querySelectorAll(".toc-item");
+      for (var i = 0; i < items.length; i++) {
+        var li = items[i];
+        var text = li.getAttribute("data-toc-text") || "";
+        var selfMatch = q === "" || text.indexOf(q) !== -1;
+        var childMatch = false;
+        if (!selfMatch) {
+          var childItems = li.querySelectorAll(".toc-item");
+          for (var c = 0; c < childItems.length; c++) {
+            var ctext = childItems[c].getAttribute("data-toc-text") || "";
+            if (q === "" || ctext.indexOf(q) !== -1) { childMatch = true; break; }
+          }
+        }
+        li.hidden = !(selfMatch || childMatch);
+      }
+    });
+  }
+
+  function initScrollspy(){
+    if (typeof IntersectionObserver === "undefined") return;
+    var targets = document.querySelectorAll('main.content [id^="sec-"]');
+    var links = {};
+    var tocLinks = document.querySelectorAll(".toc-link");
+    for (var i = 0; i < tocLinks.length; i++) {
+      var target = tocLinks[i].getAttribute("data-target");
+      if (target) { links[target] = tocLinks[i]; }
+    }
+    var observer = new IntersectionObserver(function(entries){
+      for (var e = 0; e < entries.length; e++) {
+        var entry = entries[e];
+        var link = links[entry.target.id];
+        if (!link) continue;
+        if (entry.isIntersecting) {
+          var active = document.querySelectorAll(".toc-link.active");
+          for (var a = 0; a < active.length; a++) { active[a].classList.remove("active"); }
+          link.classList.add("active");
+        }
+      }
+    }, { rootMargin: "-15% 0px -70% 0px", threshold: 0 });
+    for (var t = 0; t < targets.length; t++) { observer.observe(targets[t]); }
+  }
+
+  var searchIndex = [];
+
+  function buildSearchIndex(){
+    var nodes = document.querySelectorAll('main.content [id^="sec-"]');
+    for (var i = 0; i < nodes.length; i++) {
+      var n = nodes[i];
+      var headingEl = n.querySelector("h2, h3, h4");
+      var title = headingEl ? headingEl.textContent.trim() : n.id;
+      searchIndex.push({ id: n.id, title: title, text: (n.textContent || "").toLowerCase() });
+    }
+  }
+
+  function clearSearchHighlights(){
+    var hits = document.querySelectorAll(".data-table tbody tr.search-hit");
+    for (var i = 0; i < hits.length; i++) { hits[i].classList.remove("search-hit"); }
+  }
+
+  function initGlobalSearch(){
+    var input = document.getElementById("global-search");
+    var panel = document.getElementById("search-panel");
+    if (!input || !panel) return;
+
+    input.addEventListener("input", function(){
+      var q = input.value.trim().toLowerCase();
+      clearSearchHighlights();
+
+      if (q.length < 2) { panel.hidden = true; panel.innerHTML = ""; return; }
+
+      var results = [];
+      for (var i = 0; i < searchIndex.length; i++) {
+        var item = searchIndex[i];
+        if (item.text.indexOf(q) === -1) continue;
+        var count = item.text.split(q).length - 1;
+        results.push({ id: item.id, title: item.title, count: count });
+      }
+      results.sort(function(a,b){ return b.count - a.count; });
+
+      if (results.length === 0) {
+        panel.innerHTML = '<div class="search-empty">Sin coincidencias.</div>';
+      } else {
+        panel.innerHTML = "";
+        var top = results.slice(0, 25);
+        for (var r = 0; r < top.length; r++) {
+          var btn = document.createElement("button");
+          btn.type = "button";
+          btn.className = "search-result";
+          btn.setAttribute("data-target", top[r].id);
+          var titleSpan = document.createElement("span");
+          titleSpan.className = "search-result-title";
+          titleSpan.textContent = top[r].title;
+          var countSpan = document.createElement("span");
+          countSpan.className = "search-result-count";
+          countSpan.textContent = String(top[r].count);
+          btn.appendChild(titleSpan);
+          btn.appendChild(countSpan);
+          panel.appendChild(btn);
+        }
+      }
+      panel.hidden = false;
+
+      for (var k = 0; k < results.length; k++) {
+        var sec = document.getElementById(results[k].id);
+        if (!sec) continue;
+        var rows = sec.querySelectorAll("tbody tr");
+        for (var rr = 0; rr < rows.length; rr++) {
+          if ((rows[rr].textContent || "").toLowerCase().indexOf(q) !== -1) {
+            rows[rr].classList.add("search-hit");
+          }
+        }
+      }
+    });
+
+    panel.addEventListener("click", function(ev){
+      var btn = ev.target && ev.target.closest ? ev.target.closest(".search-result") : null;
+      if (!btn) return;
+      var id = btn.getAttribute("data-target");
+      scrollToId(id);
+      panel.hidden = true;
+      input.value = "";
+      clearSearchHighlights();
+    });
+
+    document.addEventListener("click", function(ev){
+      if (panel.hidden) return;
+      if (!panel.contains(ev.target) && ev.target !== input) { panel.hidden = true; }
+    });
+  }
+
+  function toggleTruncate(el){
+    var full = el.getAttribute("data-full") || "";
+    var expanded = el.getAttribute("aria-expanded") === "true";
+    if (expanded) {
+      var shortText = full.length > 160 ? (full.slice(0, 157) + "...") : full;
+      el.textContent = shortText;
+      el.setAttribute("aria-expanded", "false");
+      el.classList.remove("is-expanded");
+    } else {
+      el.textContent = full;
+      el.setAttribute("aria-expanded", "true");
+      el.classList.add("is-expanded");
+    }
+  }
+
+  function initTruncateHandlers(){
+    document.addEventListener("click", function(ev){
+      var t = ev.target && ev.target.closest ? ev.target.closest(".truncate") : null;
+      if (!t) return;
+      toggleTruncate(t);
+    });
+    document.addEventListener("keydown", function(ev){
+      if (ev.key !== "Enter" && ev.key !== " ") return;
+      var t = ev.target && ev.target.closest ? ev.target.closest(".truncate") : null;
+      if (!t) return;
+      ev.preventDefault();
+      toggleTruncate(t);
+    });
+  }
+
+  function boot(){
+    safeRun(initThemeToggle);
+    safeRun(initPrintButton);
+    safeRun(function(){ initSortableTables(document); });
+    safeRun(function(){ initTableFilters(document); });
+    safeRun(function(){ initFindingsFilter(document); });
+    safeRun(initTocFilter);
+    safeRun(initScrollspy);
+    safeRun(buildSearchIndex);
+    safeRun(initGlobalSearch);
+    safeRun(initAnchorOpen);
+    safeRun(initTruncateHandlers);
+  }
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", boot);
+  } else {
+    boot();
+  }
+})();</script></body></html>
