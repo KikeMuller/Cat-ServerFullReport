@@ -1,0 +1,22 @@
+# Finales de linea: LF siempre, en el repositorio y en el arbol de trabajo.
+#
+# Esto NO es cosmetico para este proyecto. El entregable es un script de bash
+# que se copia a servidores Linux. Si alguien clona el repositorio en Windows
+# con core.autocrlf=true, el archivo se materializa con CRLF, y al copiarlo a
+# un servidor el shebang queda como "#!/usr/bin/env bash\r": Linux busca un
+# interprete llamado "bash\r", no lo encuentra, y falla con "bad interpreter".
+# La herramienta no corre y el motivo no es evidente.
+#
+# "eol=lf" fuerza LF tambien al hacer checkout, sin importar la configuracion
+# de git de quien clona.
+
+* text=auto eol=lf
+
+# El script, explicito: es el archivo que no puede llevar CRLF nunca.
+cat-serverfullreport text eol=lf
+
+# Binarios: que git no intente normalizarlos ni mostrarlos como texto.
+*.png binary
+
+# El reporte de ejemplo se genera en Linux; se versiona tal cual, con LF.
+docs/reporte-ejemplo.html text eol=lf
