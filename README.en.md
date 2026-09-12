@@ -33,7 +33,7 @@ One file. No modules, no installation, no internet access, no `jq` or Python. Co
 
 > **Status: `v0.1.0-slice` — a working proof of concept, not a finished MVP.**
 > The script runs end to end and produces complete reports against real machines,
-> but it has only been validated on Ubuntu and CentOS Stream 9. See [Compatibility](#compatibility).
+> but it has only been validated on Ubuntu, CentOS Stream 9 and openSUSE Leap. See [Compatibility](#compatibility).
 
 It is the Linux sibling of [Get-ServerFullReport](https://github.com/KikeMuller/Get-ServerFullReport) (Windows / PowerShell): the same report schema, the same visual language in the HTML, and the same discipline of never asserting anything about data that could not be read.
 
@@ -284,7 +284,8 @@ Strict POSIX `sh` compatibility is not a goal.
 | Debian | Expected to be equivalent to Ubuntu; not tested directly |
 | CentOS Stream 9 | **Tested** on a real VM (KVM), including the `dnf`, `firewalld` and `update-crypto-policies` branches. See [Tested RHEL compatibility](#tested-rhel-compatibility). |
 | RHEL / Rocky / Alma / Fedora | Not tested directly, but they share a base with CentOS Stream 9 (same `dnf`, `systemd`, `firewalld`, SELinux) |
-| SUSE / openSUSE | **Not tested.** `zypper` branch implemented |
+| openSUSE Leap 15.6 | **Tested** on a real VM (KVM), including the `zypper` branch with bash 4.4 (the project's stated minimum). See [Tested SUSE compatibility](#tested-suse-compatibility). |
+| SLES / openSUSE Tumbleweed | Not tested directly, but they share `zypper`/`rpm` with openSUSE Leap |
 | Alpine / Arch | **Partial.** Installed packages are listed (`apk`, `pacman`), but pending updates are not: that section reports that the manager has no query implemented |
 
 If you try it on one of the unvalidated ones, a report on the result is very welcome.
@@ -304,6 +305,24 @@ Confirmed on that same VM:
 
 Rocky Linux, AlmaLinux and RHEL itself were not tested directly, but they share a binary base with CentOS Stream 9 (same `dnf`, `systemd`, `firewalld`, SELinux), so the residual risk is low.
 
+### Tested SUSE compatibility
+
+The SUSE family was tested on a real VM (openSUSE Leap 15.6, official cloud image on KVM/libvirt). The test found and fixed two real bugs in the `zypper` pending-updates branch:
+
+- **No repository refresh beforehand.** Unlike the `apt` branch, which refreshes the index before querying (with the same documented rationale in the code: avoid false negatives against a stale cache), the `zypper` branch did not. On a freshly provisioned machine, the first `zypper` query needed to build one repository's cache — took several real seconds — and the query's `timeout` killed it before it printed anything: the report said "no pending updates" when there were actually four.
+- **The `awk` did not exclude the header row of `zypper list-updates`'s table.** The row `S | Repository | Name | Current Version | Available Version | Arch` satisfies the same conditions as a real data row and slipped through as if it were a package named "Name".
+
+Fixed by adding a rooted `zypper refresh` (same pattern as `apt-get update`) and excluding the header by exact field content, not by position.
+
+Confirmed on that same VM:
+
+- **bash 4.4.23**, the oldest version among the three distributions tested — validates the project's stated `bash 4.0+` floor in practice, not just in theory.
+- `rpm -qa --queryformat` (`zypper`'s actual backend) correctly listing 591 packages.
+- `iptables -L -n` (the firewall detected on this image, with no firewalld or nft installed) returning real rules.
+- AppArmor via `aa-status`, a third live confirmation of the same mechanism as Ubuntu, distinct from RHEL's SELinux.
+
+SUSE Linux Enterprise Server (SLES) and openSUSE Tumbleweed were not tested directly, but they share `zypper` and the `rpm` format with openSUSE Leap.
+
 ## Security
 
 - **Read-only, no exceptions.** It does not start services, does not open ports, does not write outside its temporary files, which it cleans up on exit.
@@ -317,6 +336,7 @@ Rocky Linux, AlmaLinux and RHEL itself were not tested directly, but they share 
 - **It does not determine which TLS protocols the system actually accepts.** Section 1.11.2 reports the OpenSSL version and explicit configuration, but it does not issue a compliance verdict. The only reliable way to know is to open a real TLS connection, and the script is read-only. Documented in detail in the code itself.
 - **Pending updates with `apk` and `pacman`** is not implemented.
 - **Rocky Linux, AlmaLinux and RHEL itself were not tested directly** (only CentOS Stream 9; see [Tested RHEL compatibility](#tested-rhel-compatibility)).
+- **SLES and openSUSE Tumbleweed were not tested directly** (only openSUSE Leap 15.6; see [Tested SUSE compatibility](#tested-suse-compatibility)).
 
 Compared to the Windows version, these capabilities are still missing:
 

@@ -4532,18 +4532,39 @@ recolectar_actualizaciones_pendientes() {
       salida="$(ejecutar_comando 30 apt list --upgradable 2>/dev/null | tail -n +2)"
       ;;
     dnf|yum)
-      # No probado en vivo contra un RHEL/Fedora real en esta sesion (los
-      # equipos de prueba disponibles son Debian/Ubuntu). OJO documentado
-      # para quien lo pruebe primero: "dnf/yum check-update" sale con
-      # codigo 100 (no 0) cuando SI hay actualizaciones disponibles -- 0
+      # Probado en vivo contra CentOS Stream 9 real: "dnf check-update" sale
+      # con codigo 100 (no 0) cuando SI hay actualizaciones disponibles -- 0
       # significa "no hay nada pendiente" y 1 es un error real. Por eso NO
       # se usa "if ! salida=...": un codigo 100 ahi se leeria como fallo y
       # se perderian los datos, aunque la consulta haya funcionado bien.
       salida="$(ejecutar_comando 60 "$gestor" check-update 2>/dev/null | awk 'NF==3 && $1 !~ /^(Last|Obsoleting)/')"
       ;;
     zypper)
-      # Tampoco probado en vivo.
-      salida="$(ejecutar_comando 60 zypper --non-interactive list-updates 2>/dev/null | awk -F'|' 'NF>=5 && $2 ~ /[a-zA-Z]/ {gsub(/^ +| +$/,"",$3); gsub(/^ +| +$/,"",$5); print $3 "\t" $5}')"
+      # Dos bugs encontrados probando en vivo contra openSUSE Leap real:
+      #
+      # 1) Sin refresco previo, la primera consulta de zypper en un equipo
+      #    recien aprovisionado puede necesitar construir el cache de algun
+      #    repositorio (visto en vivo: tardo varios segundos reales por un
+      #    repo), y el timeout de la consulta la mataba antes de que
+      #    imprimiera nada -- reportando "sin actualizaciones pendientes"
+      #    cuando en realidad habia varias. Mismo riesgo que ya motivo el
+      #    refresco explicito en la rama de apt; aca faltaba.
+      # 2) El awk no excluia la fila de ENCABEZADO de la tabla ("S |
+      #    Repository | Name | Current Version | Available Version | Arch"),
+      #    que cumple las mismas condiciones que una fila de datos real y se
+      #    colaba como si fuera un paquete llamado "Name". Se excluye por
+      #    contenido exacto del campo, no por posicion: la posicion del
+      #    encabezado varia segun si zypper imprimio advertencias antes.
+      if [ "${CAPS[es_root]:-0}" = "1" ]; then
+        ejecutar_comando 60 zypper --non-interactive refresh >/dev/null 2>&1
+      fi
+      salida="$(ejecutar_comando 60 zypper --non-interactive list-updates 2>/dev/null | awk -F'|' '
+        NF>=5 && $2 ~ /[a-zA-Z]/ {
+          paquete=$3; version=$5
+          gsub(/^ +| +$/,"",paquete); gsub(/^ +| +$/,"",version)
+          if (paquete == "Name") next
+          print paquete "\t" version
+        }')"
       ;;
     *)
       agregar_seccion_mensaje "$id" "Actualizaciones Pendientes" \

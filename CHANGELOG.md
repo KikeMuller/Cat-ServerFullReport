@@ -21,6 +21,17 @@ versionado es [semántico](https://semver.org/lang/es/).
   sin herramienta instalada / herramienta detectada pero sin salida) en vez
   de un mensaje fijo que no correspondía a los tres casos.
 
+- **1.2.3 Actualizaciones Pendientes con `zypper` reportaba falsos negativos.**
+  Dos bugs encontrados probando en vivo contra openSUSE Leap real: (1) sin
+  refresco previo de repositorios, a diferencia de la rama `apt`, la primera
+  consulta en un equipo recién aprovisionado podía necesitar construir el
+  cache de un repositorio y el `timeout` la mataba antes de imprimir nada,
+  reportando "sin actualizaciones pendientes" cuando había cuatro; (2) el
+  `awk` no excluía la fila de encabezado de la tabla de `zypper
+  list-updates`, que se colaba como si fuera un paquete llamado "Name".
+  Corregido con un `zypper refresh` explícito (mismo patrón que `apt-get
+  update`) y excluyendo el encabezado por contenido exacto.
+
 ### Validado
 
 - **Familia RHEL probada en una VM real** (CentOS Stream 9, imagen cloud
@@ -28,6 +39,12 @@ versionado es [semántico](https://semver.org/lang/es/).
   `dnf`, `update-crypto-policies` y SELinux (vía `getenforce`) funcionan
   como estaba escrito. Detalle en el README, sección "Compatibilidad
   probada en RHEL".
+- **Familia SUSE probada en una VM real** (openSUSE Leap 15.6, imagen cloud
+  oficial sobre KVM/libvirt), incluido el piso `bash 4.0+` del proyecto
+  contra bash 4.4.23 real (la versión más antigua de las tres distros
+  probadas): `rpm -qa`, `iptables -L -n` y AppArmor vía `aa-status`
+  funcionan como estaba escrito. Detalle en el README, sección
+  "Compatibilidad probada en SUSE".
 
 ---
 
