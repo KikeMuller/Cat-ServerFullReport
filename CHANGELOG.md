@@ -25,7 +25,7 @@ visual de la versión Windows— antes de invertir en el resto de las secciones.
 
 ### Agregado
 
-- Script único `cat-serverfullreport` (bash 4.0+, ~3.900 líneas, sin dependencias
+- Script único `cat-serverfullreport` (bash 4.0+, ~4.700 líneas, sin dependencias
   fuera del sistema base).
 - **41 secciones de recolección** cubriendo sistema, almacenamiento, red, seguridad,
   TLS, tareas programadas, salud, plataforma y agentes de protección.
@@ -89,7 +89,7 @@ visual de la versión Windows— antes de invertir en el resto de las secciones.
 ### Limitaciones de esta versión
 
 - Sin modo flota (auditoría de varios equipos en paralelo).
-- Sin exportación a JSON, CSV ni Markdown, y sin comparación contra baseline.
+- Sin exportación a CSV, y sin comparación contra baseline (drift).
 - Sin modo remoto nativo por SSH: para auditar un servidor remoto se copia el script
   y se ejecuta allá.
 - Actualizaciones pendientes no implementadas para `apk` ni `pacman`.

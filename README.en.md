@@ -1,4 +1,4 @@
-<!-- synced-with: README.md @ (sin commit inicial todavia) (2026-09-12) -->
+<!-- synced-with: README.md @ 6c41533 (2026-09-12) -->
 
 [![README en español](https://img.shields.io/badge/README-Espa%C3%B1ol-lightgrey)](README.md)
 [![README in English](https://img.shields.io/badge/README-English-blue)](README.en.md)
