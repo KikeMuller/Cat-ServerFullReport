@@ -29,7 +29,7 @@ Un solo archivo. Sin módulos, sin instalación, sin conexión a internet, sin `
 
 > **Estado: `v0.1.0-slice` — prueba de concepto funcional, no un MVP terminado.**
 > El script corre de punta a punta y genera reportes completos contra equipos reales,
-> pero está validado solo en Ubuntu, CentOS Stream 9, openSUSE Leap y Debian 12. Ver [Compatibilidad](#compatibilidad).
+> pero está validado solo en Ubuntu, RHEL 10, CentOS Stream 9, openSUSE Leap y Debian 12. Ver [Compatibilidad](#compatibilidad).
 
 Es el hermano Linux de [Get-ServerFullReport](https://github.com/KikeMuller/Get-ServerFullReport) (Windows / PowerShell): mismo esquema de reporte, mismo lenguaje visual del HTML y la misma disciplina de no afirmar nada sobre un dato que no se pudo leer.
 
@@ -279,7 +279,8 @@ No se persigue compatibilidad con `sh` POSIX estricto.
 | Ubuntu 24.04 / 26.04 | **Probado**, incluyendo una ejecución como root con `LANG=es_ES.UTF-8` |
 | Debian 12 (bookworm) | **Probado** en una VM real (KVM). Ver [Compatibilidad probada en Debian](#compatibilidad-probada-en-debian). |
 | CentOS Stream 9 | **Probado** en una VM real (KVM), incluidas las ramas de `dnf`, `firewalld` y `update-crypto-policies`. Ver [Compatibilidad probada en RHEL](#compatibilidad-probada-en-rhel). |
-| RHEL / Rocky / Alma / Fedora | No probados directamente, pero comparten base con CentOS Stream 9 (mismo `dnf`, `systemd`, `firewalld`, SELinux) |
+| RHEL 10.2 | **Probado** en una VM real, instalada desde el DVD oficial (no un clon). Ver [Compatibilidad probada en RHEL](#compatibilidad-probada-en-rhel). |
+| Rocky / Alma / Fedora | No probados directamente, pero comparten base con RHEL y CentOS Stream 9 (mismo `dnf`, `systemd`, `firewalld`, SELinux) |
 | openSUSE Leap 15.6 | **Probado** en una VM real (KVM), incluida la rama de `zypper` con bash 4.4 (el piso mínimo del proyecto). Ver [Compatibilidad probada en SUSE](#compatibilidad-probada-en-suse). |
 | SLES / openSUSE Tumbleweed | No probados directamente, pero comparten `zypper`/`rpm` con openSUSE Leap |
 | Alpine / Arch | **Parcial.** Los paquetes instalados se listan (`apk`, `pacman`), pero las actualizaciones pendientes no: esa sección informa que el gestor no tiene consulta implementada |
@@ -290,16 +291,21 @@ El script fuerza `LC_ALL=C` en todos los comandos externos, así que funciona ig
 
 ### Compatibilidad probada en RHEL
 
-La familia RHEL se probó en una VM real (CentOS Stream 9, imagen cloud oficial sobre KVM/libvirt), no solo contra la documentación. La prueba encontró y corrigió un bug real: la sección de firewall nunca intentaba leer reglas de `firewalld` —solo probaba `ufw`, `nft` e `iptables`— así que en un servidor RHEL típico, con root y firewalld activo, decía "no se pudieron leer sin privilegios de root" siendo falso: sí había privilegios, faltaba la rama de código. Corregido agregando `firewall-cmd --list-all-zones` y distinguiendo el motivo real (sin privilegios / sin herramienta instalada / herramienta detectada pero sin datos) en vez de un mensaje fijo.
+La familia RHEL se probó primero en una VM real de CentOS Stream 9 (imagen cloud oficial sobre KVM/libvirt) y después en **RHEL 10.2 genuino**, instalado desde el DVD oficial (`rhel-10.2-x86_64-dvd.iso`) con una instalación desatendida por Kickstart — no un clon, no una imagen cloud, el producto real de Red Hat.
 
-Confirmado en esa misma VM:
+La primera corrida encontró y corrigió un bug real: la sección de firewall nunca intentaba leer reglas de `firewalld` —solo probaba `ufw`, `nft` e `iptables`— así que en un servidor RHEL típico, con root y firewalld activo, decía "no se pudieron leer sin privilegios de root" siendo falso: sí había privilegios, faltaba la rama de código. Corregido agregando `firewall-cmd --list-all-zones` y distinguiendo el motivo real (sin privilegios / sin herramienta instalada / herramienta detectada pero sin datos) en vez de un mensaje fijo.
 
-- `dnf check-update` interpretado correctamente (código 0 sin salida = sin actualizaciones pendientes; código 100 = sí hay, según la documentación de dnf).
-- `update-crypto-policies --show` devolviendo `DEFAULT` correctamente.
-- SELinux vía `getenforce` (`Enforcing`), la contraparte de AppArmor en esta familia.
+La corrida contra RHEL 10 genuino —sin registrar contra Red Hat Subscription Manager, el estado normal de un equipo de prueba— encontró un segundo problema, más sutil: `dnf check-update` sale con código 1 cuando el equipo no tiene ningún repositorio habilitado (nada que ver con estar al día), pero el script no distinguía ese código de "sin actualizaciones pendientes" y mostraba el mismo mensaje genérico para ambos casos. Para quien audita son hallazgos muy distintos: un RHEL sin canal de parches configurado es un problema en sí mismo. Corregido capturando el código de salida real de `dnf`/`yum` y devolviendo un mensaje específico ("no se pudo consultar actualizaciones... el equipo no tiene ningún repositorio habilitado") en vez de la ambigüedad anterior.
+
+Confirmado en las dos VMs:
+
+- `dnf check-update` interpretado correctamente (código 0 = sin actualizaciones pendientes; código 100 = sí hay; código 1 = error real, distinguido explícitamente).
+- `update-crypto-policies --show` devolviendo `DEFAULT` correctamente (CentOS Stream 9).
+- SELinux vía `getenforce` (`Enforcing` en ambas, el modo por defecto de un Kickstart sin personalizar), la contraparte de AppArmor en esta familia.
+- `rpm -qa` listando 395 paquetes en RHEL 10 con formato correcto.
 - Degradación sin privilegios: mismo comportamiento que en Ubuntu, sin errores de bash.
 
-Rocky Linux, AlmaLinux y RHEL propiamente dicho no se probaron directamente, pero comparten base binaria con CentOS Stream 9 (mismo `dnf`, `systemd`, `firewalld`, SELinux), así que el riesgo residual es bajo.
+Rocky Linux, AlmaLinux y Fedora no se probaron directamente, pero comparten base con RHEL y CentOS Stream 9 (mismo `dnf`, `systemd`, `firewalld`, SELinux), así que el riesgo residual es bajo.
 
 ### Compatibilidad probada en SUSE
 
@@ -344,7 +350,7 @@ Confirmado en esa misma VM:
 
 - **No determina qué protocolos TLS acepta realmente el sistema.** La sección 1.11.2 reporta versión de OpenSSL y configuración explícita, pero no emite veredicto de cumplimiento. La única forma confiable de saberlo es abrir una conexión TLS real, y el script es de solo lectura. Documentado en detalle en el propio código.
 - **Actualizaciones pendientes con `apk` y `pacman`** no está implementado.
-- **Rocky Linux, AlmaLinux y RHEL propiamente dicho no se probaron directamente** (solo CentOS Stream 9; ver [Compatibilidad probada en RHEL](#compatibilidad-probada-en-rhel)).
+- **Rocky Linux, AlmaLinux y Fedora no se probaron directamente** (sí RHEL 10.2 y CentOS Stream 9; ver [Compatibilidad probada en RHEL](#compatibilidad-probada-en-rhel)).
 - **SLES y openSUSE Tumbleweed no se probaron directamente** (solo openSUSE Leap 15.6; ver [Compatibilidad probada en SUSE](#compatibilidad-probada-en-suse)).
 
 Respecto de la versión Windows, todavía faltan estas capacidades:

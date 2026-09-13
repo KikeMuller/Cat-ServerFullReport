@@ -11,6 +11,16 @@ versionado es [semántico](https://semver.org/lang/es/).
 
 ### Corregido
 
+- **1.2.3 Actualizaciones Pendientes en `dnf`/`yum` no distinguia un error
+  real de "sin actualizaciones".** `dnf check-update` sale con codigo 1
+  cuando el equipo no tiene ningun repositorio habilitado (nada que ver con
+  estar al dia), pero el codigo no se capturaba por separado y ambos casos
+  producian el mismo mensaje generico. Encontrado probando contra un RHEL
+  10 real sin registrar contra Red Hat Subscription Manager -- el estado
+  normal de un equipo de prueba, y un caso donde el reporte decia
+  "sin actualizaciones pendientes" sin haber podido consultar nada.
+  Corregido capturando el codigo de salida real y devolviendo un mensaje
+  especifico para el caso de error.
 - **Deteccion de capacidades subestimaba lo instalado en usuarios sin
   privilegios.** `aa-status`, `dmidecode`, `ufw`, `nft`, `iptables` y
   `getenforce` viven por convención en `/usr/sbin`, directorio ausente del
@@ -52,6 +62,11 @@ versionado es [semántico](https://semver.org/lang/es/).
   `dnf`, `update-crypto-policies` y SELinux (vía `getenforce`) funcionan
   como estaba escrito. Detalle en el README, sección "Compatibilidad
   probada en RHEL".
+- **RHEL 10.2 genuino probado en una VM real**, instalada desde el DVD
+  oficial (no un clon, no una imagen cloud) con Kickstart desatendido:
+  `dnf`, `rpm -qa` (395 paquetes), SELinux `Enforcing` y `firewalld`
+  funcionan como estaba escrito. Detalle en el README, misma sección
+  "Compatibilidad probada en RHEL".
 - **Familia SUSE probada en una VM real** (openSUSE Leap 15.6, imagen cloud
   oficial sobre KVM/libvirt), incluido el piso `bash 4.0+` del proyecto
   contra bash 4.4.23 real (la versión más antigua de las tres distros

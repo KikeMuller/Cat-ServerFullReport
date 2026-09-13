@@ -3512,10 +3512,7 @@ recolectar_paquetes() {
   local salida
   case "$gestor" in
     dnf|yum)
-      # No probado en vivo contra un RHEL/Fedora real en esta sesion (los
-      # dos equipos de prueba disponibles son Debian/Ubuntu); el formato de
-      # --queryformat esta documentado y es estable, pero queda pendiente
-      # de verificar contra un RPM real.
+      # Probado en vivo contra CentOS Stream 9 y RHEL 10 reales.
       salida="$(ejecutar_comando 30 rpm -qa --queryformat '%{NAME}\t%{VERSION}-%{RELEASE}\n' 2>/dev/null)"
       ;;
     apt|apt-get)
@@ -4559,12 +4556,32 @@ recolectar_actualizaciones_pendientes() {
       salida="$(ejecutar_comando 30 apt list --upgradable 2>/dev/null | tail -n +2)"
       ;;
     dnf|yum)
-      # Probado en vivo contra CentOS Stream 9 real: "dnf check-update" sale
-      # con codigo 100 (no 0) cuando SI hay actualizaciones disponibles -- 0
-      # significa "no hay nada pendiente" y 1 es un error real. Por eso NO
-      # se usa "if ! salida=...": un codigo 100 ahi se leeria como fallo y
-      # se perderian los datos, aunque la consulta haya funcionado bien.
-      salida="$(ejecutar_comando 60 "$gestor" check-update 2>/dev/null | awk 'NF==3 && $1 !~ /^(Last|Obsoleting)/')"
+      # "dnf check-update" sale con codigo 100 (no 0) cuando SI hay
+      # actualizaciones disponibles -- 0 significa "no hay nada pendiente" y
+      # 1 es un error real. Por eso el codigo se captura aparte en vez de
+      # usar "if ! salida=...": un codigo 100 ahi se leeria como fallo y se
+      # perderian los datos, aunque la consulta haya funcionado bien.
+      #
+      # El codigo 1 se distingue explicitamente, en vez de tratarlo igual
+      # que "sin actualizaciones": encontrado probando en vivo contra un
+      # RHEL 10 real sin registrar contra Red Hat Subscription Manager (caso
+      # comun en equipos de prueba/desarrollo/aislados) -- ahi "dnf
+      # check-update" sale con codigo 1 porque no hay NINGUN repositorio
+      # habilitado, no porque el sistema este al dia. Sin esta distincion,
+      # ambos casos producian el mismo "salida" vacio y el mismo mensaje
+      # generico de mas abajo -- pero para quien audita son hallazgos muy
+      # distintos: un RHEL sin canal de parches configurado es en si mismo
+      # un problema, no lo mismo que un sistema genuinamente actualizado.
+      local salida_dnf codigo_dnf
+      salida_dnf="$(ejecutar_comando 60 "$gestor" check-update 2>/dev/null)"
+      codigo_dnf=$?
+      if [ "$codigo_dnf" != "0" ] && [ "$codigo_dnf" != "100" ]; then
+        agregar_seccion_mensaje "$id" "Actualizaciones Pendientes" \
+          "Paquetes con una version mas nueva disponible en los repositorios configurados." \
+          "No se pudo consultar actualizaciones ('$gestor check-update' fallo con codigo $codigo_dnf). Motivo mas probable: el equipo no tiene ningun repositorio habilitado -- por ejemplo, un RHEL sin registrar contra Red Hat Subscription Manager."
+        return 0
+      fi
+      salida="$(printf '%s\n' "$salida_dnf" | awk 'NF==3 && $1 !~ /^(Last|Obsoleting)/')"
       ;;
     zypper)
       # Dos bugs encontrados probando en vivo contra openSUSE Leap real:
